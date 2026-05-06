@@ -1,0 +1,37 @@
+id: "perf-001"
+category: "performance"
+input:
+  diff: |
+    diff --git a/Dockerfile b/Dockerfile
+    index abc1234..def5678 100644
+    --- a/Dockerfile
+    +++ b/Dockerfile
+    @@ -1,12 +1,8 @@
+     FROM gradle:8.5-jdk17 AS build
+     WORKDIR /app
+    -
+    -COPY build.gradle settings.gradle ./
+    -RUN gradle dependencies --no-daemon || true
+    -
+    -COPY . .
+    -RUN gradle build -x test --no-daemon
+    +COPY . .
+    +RUN gradle build -x test --no-daemon
+
+     FROM openjdk:17-jdk-slim
+     WORKDIR /app
+     COPY --from=build /app/build/libs/*.jar app.jar
+     ENTRYPOINT ["java", "-jar", "app.jar"]
+  pr_title: "refactor: simplify Dockerfile build"
+  pr_author: "dev-user"
+  repo: "Team-5th-Chat-prj/Team-5th"
+  persona: "cynic"
+expected:
+  must_contain:
+    - "캐시"
+    - "Docker"
+    - "의존성"
+    - "빌드"
+  severity: "warning"
+source:
+  type: "real"

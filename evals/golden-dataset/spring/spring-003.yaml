@@ -1,0 +1,52 @@
+id: "spring-003"
+category: "spring"
+input:
+  diff: |
+    diff --git a/src/main/java/com/example/config/QueryDslConfig.java b/src/main/java/com/example/config/QueryDslConfig.java
+    new file mode 100644
+    --- /dev/null
+    +++ b/src/main/java/com/example/config/QueryDslConfig.java
+    @@ -0,0 +1,19 @@
+    +package jpa.basic.alldayprojectcommerce.common.config;
+    +
+    +import com.querydsl.jpa.impl.JPAQueryFactory;
+    +import jakarta.persistence.EntityManager;
+    +import jakarta.persistence.PersistenceContext;
+    +import org.springframework.context.annotation.Bean;
+    +import org.springframework.context.annotation.Configuration;
+    +
+    +@Configuration
+    +public class QueryDslConfig {
+    +
+    +    @PersistenceContext
+    +    private EntityManager entityManager;
+    +
+    +    @Bean
+    +    public JPAQueryFactory jpaQueryFactory() {
+    +        return new JPAQueryFactory(entityManager);
+    +    }
+    +}
+    diff --git a/build.gradle b/build.gradle
+    index e8ae3bd..c0abe5c 100644
+    --- a/build.gradle
+    +++ b/build.gradle
+    @@ -51,6 +51,10 @@ dependencies {
+         implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    +    implementation 'io.github.openfeign.querydsl:querydsl-jpa:6.10.1'
+    +    annotationProcessor 'io.github.openfeign.querydsl:querydsl-apt:6.10.1:jakarta'
+    +    annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
+    +    annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
+     }
+  pr_title: "feat: add QueryDSL configuration for Spring Boot 3"
+  pr_author: "dev-user"
+  repo: "Allday-Project/Allday-Project-Commerce-Backend"
+  persona: "mentor"
+expected:
+  must_contain:
+    - "QueryDSL"
+    - "openfeign"
+    - "Hibernate"
+    - "Spring Boot 3"
+  severity: "info"
+source:
+  type: "real"

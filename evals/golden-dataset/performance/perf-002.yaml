@@ -1,0 +1,33 @@
+id: "perf-002"
+category: "performance"
+input:
+  diff: |
+    diff --git a/.github/workflows/ai-review.yml b/.github/workflows/ai-review.yml
+    new file mode 100644
+    --- /dev/null
+    +++ b/.github/workflows/ai-review.yml
+    @@ -0,0 +1,10 @@
+    +      - name: Extract diff
+    +        id: diff
+    +        run: |
+    +          git diff origin/${{ github.base_ref }}...HEAD | head -c 10000 > /tmp/review-diff.txt
+    +          DIFF_SIZE=$(wc -c < /tmp/review-diff.txt)
+    +          echo "size=$DIFF_SIZE" >> "$GITHUB_OUTPUT"
+    +
+    +      - name: Request AI Review
+    +        run: |
+    +          HTTP_RESPONSE=$(curl -s -w "\n%{http_code}" --max-time 90 \
+    +            -X POST "${REVIEW_SERVER_URL}/review" -d "$PAYLOAD")
+  pr_title: "ci: add AI review with diff extraction"
+  pr_author: "unknown"
+  repo: "Allday-Project/Allday-Project-Commerce-Backend"
+  persona: "mentor"
+expected:
+  must_contain:
+    - "head -c"
+    - "diff"
+    - "잘림"
+    - "크기"
+  severity: "warning"
+source:
+  type: "real"

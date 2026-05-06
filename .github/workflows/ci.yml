@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'claude-review-server/**'
+      - '.github/workflows/ci.yml'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: claude-review-server
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      - name: Run tests with coverage
+        run: ./gradlew check --no-daemon
+
+      - name: Generate coverage report
+        if: always()
+        run: ./gradlew jacocoTestReport --no-daemon
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: claude-review-server/build/reports/tests/test/
+          retention-days: 7
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: claude-review-server/build/reports/jacoco/test/html/
+          retention-days: 7

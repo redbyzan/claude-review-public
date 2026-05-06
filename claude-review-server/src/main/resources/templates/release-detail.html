@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${entry.title} + ' — AI Code Review'">Release Detail</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css?v=20260416b}">
+</head>
+<body>
+
+<section class="release-header">
+    <a class="release-back" th:href="@{/release}">&larr; 릴리즈 노트</a>
+    <h1 class="release-title" th:text="${entry.title}"></h1>
+    <p class="release-subtitle">
+        <span th:text="${entry.date}"></span>
+        <span class="changelog-tag" style="margin-left:8px; vertical-align:middle;"
+              th:classappend="' changelog-tag--' + ${entry.category}"
+              th:text="${entry.category == 'feature'} ? '기능' : (${entry.category == 'improvement'} ? '개선' : '수정')"></span>
+    </p>
+</section>
+
+<section class="incident">
+
+    <div class="incident-card">
+        <h2 class="incident-heading">개요</h2>
+        <p th:text="${entry.description}"></p>
+    </div>
+
+    <div class="incident-card">
+        <h2 class="incident-heading">상세 내용</h2>
+        <p th:text="${entry.detail}" style="white-space: pre-wrap;"></p>
+    </div>
+
+</section>
+
+<footer class="footer">
+    <p>Spring Boot 3.5 + Spring AI 1.0 + Java 21</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,40 @@
+id: "test-002"
+category: "test"
+input:
+  diff: |
+    diff --git a/build.gradle b/build.gradle
+    index aabbcc..ddeeff 100644
+    --- a/build.gradle
+    +++ b/build.gradle
+    @@ -30,6 +30,8 @@ dependencies {
+         testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    +    testCompileOnly 'org.projectlombok:lombok'
+    +    testAnnotationProcessor 'org.projectlombok:lombok'
+    +    testRuntimeOnly 'com.h2database:h2'
+     }
+
+    diff --git a/src/test/resources/application-test.yml b/src/test/resources/application-test.yml
+    new file mode 100644
+    --- /dev/null
+    +++ b/src/test/resources/application-test.yml
+    @@ -0,0 +1,5 @@
+    +spring:
+    +  datasource:
+    +    url: jdbc:h2:mem:testdb
+    +    driver-class-name: org.h2.Driver
+    +  jpa:
+    +    hibernate:
+    +      ddl-auto: create-drop
+  pr_title: "chore: add test dependencies and H2 config"
+  pr_author: "dev-user"
+  repo: "Team-5th-Chat-prj/Team-5th"
+  persona: "mentor"
+expected:
+  must_contain:
+    - "H2"
+    - "테스트"
+    - "인메모리"
+    - "Lombok"
+  severity: "info"
+source:
+  type: "synthetic"

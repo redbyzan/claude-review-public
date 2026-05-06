@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>리뷰가 질문을 던지다 — AI Code Review</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css?v=20260423a}">
+</head>
+<body>
+
+<section class="release-header">
+    <a class="release-back" th:href="@{/release}">&larr; 릴리즈 노트</a>
+    <h1 class="release-title">리뷰가 질문을 던지다 — 생각해보기</h1>
+    <p class="release-subtitle">
+        <span th:text="${entry.date}"></span>
+        <span class="changelog-tag" style="margin-left:8px; vertical-align:middle;"
+              th:classappend="' changelog-tag--' + ${entry.category}"
+              th:text="'기능'"></span>
+    </p>
+</section>
+
+<section class="incident">
+
+    <!-- Background -->
+    <div class="incident-card">
+        <h2 class="incident-heading">왜 이런 업데이트를 했을까요?</h2>
+        <p>32건의 리뷰 데이터를 분석해보니, 수강생들은 AI 리뷰를 잘 읽고 있었지만<br>
+        <strong>리뷰를 넘어선 상호작용이 전혀 없었습니다.</strong></p>
+        <table class="incident-table" style="margin-top:16px;">
+            <thead><tr><th>기능</th><th>사용률</th></tr></thead>
+            <tbody>
+                <tr><td>AI 리뷰 읽기</td><td style="color:#4ade80;">100%</td></tr>
+                <tr><td>반박 기능</td><td style="color:#f87171;">0%</td></tr>
+                <tr><td>@sparta 질문</td><td style="color:#f87171;">0%</td></tr>
+                <tr><td>CTA 버튼 클릭</td><td style="color:#f87171;">0%</td></tr>
+            </tbody>
+        </table>
+        <p style="margin-top:16px;">원인을 분석하기 위해 <strong>Gemini와 Codex(두 개의 AI)에게 심층 분석</strong>을 의뢰했습니다.</p>
+    </div>
+
+    <!-- Root Cause -->
+    <div class="incident-card">
+        <h2 class="incident-heading">두 AI가 찾은 공통 원인</h2>
+
+        <div class="incident-log">
+            <div class="incident-log-item">
+                <div class="incident-log-body">
+                    <strong>원인 1: 리뷰가 "충분히 좋아서" 질문이 안 생긴다</strong>
+                    <p>수강생은 이미 "리뷰 수신 → 읽음 → 수정 → PR 업데이트 → 새 리뷰 수신" 루프에 만족하고 있었습니다.<br>
+                    추가 질문이나 반박의 니즈 자체가 없었습니다.</p>
+                </div>
+            </div>
+            <div class="incident-log-item">
+                <div class="incident-log-body">
+                    <strong>원인 2: @sparta 멘션을 발견하려면 5단계를 거쳐야 한다</strong>
+                    <pre class="incident-code">리뷰 읽음 → 하단 CTA "질문하기" 클릭 → 릴리즈 노트 페이지 로딩
+→ "@sparta 멘션 사용법" 확인 → 다시 GitHub PR로 돌아감 → 댓글에 @sparta 입력
+
+최소 5단계의 능동적 행동이 필요했습니다.</pre>
+                </div>
+            </div>
+            <div class="incident-log-item incident-log-item--success">
+                <div class="incident-log-body">
+                    <strong>핵심 통찰: "부가 기능"이라는 개념 자체가 문제</strong>
+                    <p>사용자는 "핵심 기능"과 "부가 기능"을 구분하지 않습니다.<br>
+                    하나의 리뷰 흐름이 있을 뿐입니다.<br>
+                    부가 기능이 사용되려면 <strong>별개의 기능이 아니라 리뷰 경험의 자연스러운 연속</strong>이어야 합니다.</p>
+                    <p style="margin-top:8px; color:#4ade80;"><strong>— Gemini + Codex 공통 결론</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- What Changed -->
+    <div class="incident-card">
+        <h2 class="incident-heading">무엇이 바뀌었나요?</h2>
+        <p><strong>접근 방식을 완전히 바꿨습니다.</strong><br>
+        수강생이 직접 질문을 만들어서 물어보기를 기대하는 대신,<br>
+        <strong>AI가 먼저 질문을 던지기로</strong> 했습니다.</p>
+
+        <div class="incident-log" style="margin-top:16px;">
+            <div class="incident-log-item incident-log-item--fail">
+                <div class="incident-log-body">
+                    <strong>Before — 버튼이 질문을 유도하던 방식</strong>
+                    <pre class="incident-code">리뷰 하단에 shields.io 뱃지 3개 (워크플로우 업데이트 / 가이드 / 질문하기)
+→ 수강생이 버튼 발견 → 클릭 → 다른 페이지 이동 → 다시 돌아와서 @sparta 입력
+
+문제: 버튼은 "상태 표시"로 인식, 클릭률 1% 미만
+문제: 5단계의 능동적 행동 필요</pre>
+                </div>
+            </div>
+            <div class="incident-log-item incident-log-item--success">
+                <div class="incident-log-body">
+                    <strong>After — AI가 질문을 던지는 방식</strong>
+                    <pre class="incident-code">## 💡 학습 포인트
+Optional과 null 처리의 차이를 이해하는 것이 중요합니다.
+
+## 🤔 생각해보기
+이 동시성 제어 방식은 트래픽이 10배 늘어나면
+어떤 문제가 발생할까요?
+
+> 💬 이 질문에 대해 궁금한 점이 있으면
+> 코멘트에 **@sparta** 를 남겨보세요!
+> 예: `@sparta 이 부분에서 분산락 대신 낙관적 락을 쓸 수 있나요?`
+
+효과: 질문을 읽는 순간 자연스럽게 머릿속에서 답을 생각하게 됨 (실제 학습)</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Two Personas -->
+    <div class="incident-card">
+        <h2 class="incident-heading">멘토와 시니컬, 다른 질문을 던집니다</h2>
+        <p>두 페르소나가 각각의 톤에 맞는 질문을 자동 생성합니다.</p>
+
+        <table class="incident-table incident-table--compare" style="margin-top:16px;">
+            <thead><tr><th>페르소나</th><th>질문 톤</th><th>예시</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td><strong>멘토</strong><br><span style="color:#6b7280; font-size:0.85em;">10년차 시니어</span></td>
+                    <td>학습적<br><span style="color:#6b7280; font-size:0.85em;">원리와 트레이드오프를 고민하게 만드는 열린 질문</span></td>
+                    <td style="font-size:0.9em;">"이 패턴을 대규모 트래픽 환경에서도 동일하게 적용할 수 있을까요?"</td>
+                </tr>
+                <tr>
+                    <td><strong>시니컬</strong><br><span style="color:#6b7280; font-size:0.85em;">15년차 원칙주의자</span></td>
+                    <td>도전적<br><span style="color:#6b7280; font-size:0.85em;">운영 환경에서 어떻게 실패할 수 있는지를 생각하게 만드는 질문</span></td>
+                    <td style="font-size:0.9em;">"이 예외 처리 방식은 외부 API 응답이 10초 지연되면 어떤 연쇄 장애를 유발할까요?"</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- How it works technically -->
+    <div class="incident-card">
+        <h2 class="incident-heading">어떻게 구현했나요?</h2>
+        <p>새로운 API 호출 없이, <strong>프롬프트에 질문 생성 지시를 추가</strong>하는 것으로 구현했습니다.</p>
+
+        <div class="incident-log" style="margin-top:12px;">
+            <div class="incident-log-item">
+                <span class="incident-log-time">1차</span>
+                <div class="incident-log-body">
+                    <strong>프롬프트에 "생각해보기" 섹션 추가</strong>
+                    <p>AI가 이미 리뷰한 코드의 맥락을 알고 있으므로, 템플릿에 섹션만 추가하면<br>
+                    별도 API 호출 없이 컨텍스트에 맞는 질문이 자동 생성됩니다.</p>
+                </div>
+            </div>
+            <div class="incident-log-item">
+                <span class="incident-log-time">2차</span>
+                <div class="incident-log-body">
+                    <strong>shields.io 뱃지 → 텍스트 인라인 교체</strong>
+                    <p>외부 CDN 의존(shields.io)을 제거하고, 프롬프트 내에 @sparta 멘션 예시를<br>
+                    자연스럽게 포함시켰습니다. 추가 비용 없이 전환했습니다.</p>
+                </div>
+            </div>
+            <div class="incident-log-item incident-log-item--success">
+                <span class="incident-log-time">3차</span>
+                <div class="incident-log-body">
+                    <strong>중복 방지 로직</strong>
+                    <p>AI가 프롬프트를 충실히 따르면 @sparta 유도가 이미 포함되어 있습니다.<br>
+                    이 경우 하단 보조 유도는 자동으로 생략됩니다.</p>
+                    <pre class="incident-code">if (content.contains("@sparta")) {
+    // 프롬프트에서 이미 유도 → 하단 CTA 생략
+    return content;
+}
+// AI가 누락한 경우에만 보조 유도 삽입</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Codex Review -->
+    <div class="incident-card" style="opacity:0.92;">
+        <h2 class="incident-heading">AI 리뷰 결과 <span style="font-size:0.75em; font-weight:400; color:#6b7280;">(개밥먹기)</span></h2>
+        <p>Codex(claude-glm)가 변경사항을 리뷰했습니다.</p>
+        <table class="incident-table" style="margin-top:12px;">
+            <thead><tr><th>지적</th><th>판단</th></tr></thead>
+            <tbody>
+                <tr><td>프롬프트 + injectCTA 이중 노출 (중복 CTA)</td><td style="color:#4ade80;">수용 — 중복 방지 로직 추가</td></tr>
+                <tr><td>Micrometer position=middle 태그 제거</td><td style="color:#4ade80;">수용 — result 태그만 사용</td></tr>
+                <tr><td>application.yml 미사용 설정값 잔존</td><td style="color:#4ade80;">수용 — guide-url, update-url, qa-url 제거</td></tr>
+                <tr><td>LinkedHashMap 순서 미보장 (Map.ofEntries)</td><td style="color:#4ade80;">수용 — 생성자 순차 put()으로 변경</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+</section>
+
+<footer class="footer">
+    <p>Spring Boot 3.5 + Spring AI 1.0 + Java 21</p>
+</footer>
+
+</body>
+</html>

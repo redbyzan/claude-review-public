@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Code Review</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css?v=20260416a}">
+</head>
+<body>
+
+<!-- Hero -->
+<section class="hero">
+    <div class="hero-badge">
+        <span class="hero-dot"></span>
+        <span class="hero-badge-text">Spring AI 1.0</span>
+    </div>
+    <h1 class="hero-title">AI Code Review</h1>
+    <p class="hero-subtitle">PR 올리면 AI가 자동으로 코드 리뷰를 남겨줍니다</p>
+    <div class="hero-domain" id="domain-box" onclick="copyDomain()" th:attr="data-domain='https://' + ${domain}">
+        <svg class="hero-domain-icon" id="domain-icon-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        <svg class="hero-domain-icon hero-domain-icon--check" id="domain-icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <span id="domain-text" th:text="'https://' + ${domain}"></span>
+    </div>
+</section>
+
+<!-- Quick Nav -->
+<nav class="quick-nav">
+    <a th:href="@{/leaderboard}">리더보드</a>
+    <a th:href="@{/stats}">서비스 통계</a>
+    <a th:href="@{/release}">릴리즈 노트</a>
+    <a th:href="@{/incident}">장애 이력</a>
+</nav>
+
+<!-- How it Works -->
+<section class="section">
+    <div class="section-header">
+        <span class="section-label">Workflow</span>
+        <h2 class="section-title">작동 방식</h2>
+    </div>
+    <div class="timeline">
+        <div class="timeline-line"></div>
+        <div class="timeline-step">
+            <div class="timeline-num">1</div>
+            <div class="timeline-content">
+                <h3>GitHub PR 생성</h3>
+                <p>코드를 작성하고 Pull Request를 오픈합니다</p>
+            </div>
+        </div>
+        <div class="timeline-step">
+            <div class="timeline-num">2</div>
+            <div class="timeline-content">
+                <h3>Actions 트리거</h3>
+                <p>GitHub Actions가 PR 이벤트를 감지합니다</p>
+            </div>
+        </div>
+        <div class="timeline-step">
+            <div class="timeline-num">3</div>
+            <div class="timeline-content">
+                <h3>AI 분석</h3>
+                <p>AI 모델이 코드의 로직, 성능, 보안을 분석합니다</p>
+            </div>
+        </div>
+        <div class="timeline-step">
+            <div class="timeline-num">4</div>
+            <div class="timeline-content">
+                <h3>PR 코멘트</h3>
+                <p>분석 결과가 PR에 자동으로 댓글로 등록됩니다</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Review Tones -->
+<section class="section section--alt">
+    <div class="section-header">
+        <span class="section-label">Reviewers</span>
+        <h2 class="section-title">리뷰 톤 2가지</h2>
+    </div>
+    <div class="persona-grid">
+        <div class="persona-card" th:each="p : ${personas}">
+            <div class="persona-top">
+                <span class="persona-icon" th:text="${p.icon}"></span>
+                <span class="persona-badge" th:classappend="${p.tone == 'cynic'} ? 'persona-badge--cynic'" th:text="${p.toneLabel}"></span>
+            </div>
+            <h3 class="persona-name" th:text="${p.name}"></h3>
+            <p class="persona-desc" th:text="${p.description}"></p>
+            <div class="persona-quote" th:if="${p.tone == 'mentor'}">
+                "이 부분은 이렇게 개선하면 더 유연한 코드가 될 것 같아요!"
+            </div>
+            <div class="persona-quote persona-quote--cynic" th:if="${p.tone == 'cynic'}">
+                "메모리 누수가 보입니다. 운영 환경에서 죽고 싶지 않으면 고치세요."
+            </div>
+        </div>
+    </div>
+    <p class="persona-note">라운드 로빈으로 자동 교차 적용</p>
+</section>
+
+<!-- Setup Guide -->
+<section class="section">
+    <div class="section-header">
+        <span class="section-label">Integration</span>
+        <h2 class="section-title">활용 방법</h2>
+    </div>
+
+    <div class="setup-grid">
+        <div class="setup-steps">
+            <div class="setup-step">
+                <span class="setup-num">01</span>
+                <div>
+                    <h3>GitHub Actions 워크플로우 추가</h3>
+                    <p>저장소에 <code>.github/workflows/ai-review.yml</code> 파일을 생성하세요</p>
+                </div>
+            </div>
+            <div class="setup-step">
+                <span class="setup-num">02</span>
+                <div>
+                    <h3>Secrets 등록</h3>
+                    <p>Settings &gt; Secrets and variables &gt; Actions에 추가합니다</p>
+                </div>
+            </div>
+            <div class="setup-step">
+                <span class="setup-num">03</span>
+                <div>
+                    <h3>PR 생성</h3>
+                    <p>브랜치를 만들고 PR을 열면 자동으로 AI 코드 리뷰가 등록됩니다</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="setup-code">
+            <div class="code-editor">
+                <div class="code-bar">
+                    <span class="code-dot code-dot--red"></span>
+                    <span class="code-dot code-dot--yellow"></span>
+                    <span class="code-dot code-dot--green"></span>
+                    <span class="code-filename">ai-review.yml</span>
+                    <a th:replace="~{fragments/download :: icon}"></a>
+                </div>
+<pre class="code-body"><code>name: AI Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch previous AI reviews
+        id: prev-reviews
+        if: github.event.action == 'synchronize'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              per_page: 100
+            });
+            const botReviews = comments.data
+              .filter(c =&gt; c.user.type === 'Bot' &amp;&amp; c.body.includes('AI 코드리뷰'))
+              .map(c =&gt; c.body
+                .replace(/## 🤖 AI 코드리뷰\n?/, '')
+                .replace(/\n---\n&gt; \*AI 리뷰는.*$/, ''))
+              .slice(-3);
+            core.setOutput('reviews', JSON.stringify(botReviews));
+
+      - name: Extract diff
+        id: diff
+        run: |
+          git diff origin/${{ github.base_ref }}...HEAD | head -c 50000 > /tmp/review-diff.txt
+          DIFF_SIZE=$(wc -c &lt; /tmp/review-diff.txt)
+          echo "size=$DIFF_SIZE" &gt;&gt; "$GITHUB_OUTPUT"
+
+      - name: Check diff size
+        id: check
+        run: |
+          if [ "${{ steps.diff.outputs.size }}" -lt 100 ]; then
+            echo "skip=true" &gt;&gt; "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" &gt;&gt; "$GITHUB_OUTPUT"
+          fi
+
+      - name: Request AI Review
+        id: review
+        if: steps.check.outputs.skip == 'false'
+        env:
+          REVIEW_SERVER_URL: ${{ secrets.REVIEW_SERVER_URL }}
+          REVIEW_SECRET:     ${{ secrets.REVIEW_SECRET }}
+        run: |
+          PAYLOAD=$(jq -n \
+            --rawfile diff   /tmp/review-diff.txt \
+            --arg pr_title    "${{ github.event.pull_request.title }}" \
+            --arg pr_author   "${{ github.event.pull_request.user.login }}" \
+            --arg repo        "${{ github.repository }}" \
+            --argjson pr_num  "${{ github.event.pull_request.number }}" \
+            --arg base        "${{ github.base_ref }}" \
+            --arg previous_reviews '${{ steps.prev-reviews.outputs.reviews }}' \
+            '{diff:$diff, pr_title:$pr_title, pr_author:$pr_author, repo:$repo, pr_number:$pr_num, base_branch:$base, previous_reviews:$previous_reviews}')
+
+          HTTP_RESPONSE=$(curl -s -w "\n%{http_code}" --max-time 90 \
+            -X POST "${REVIEW_SERVER_URL}/review" \
+            -H "Content-Type: application/json" \
+            -H "x-review-secret: ${REVIEW_SECRET}" \
+            -H "x-github-repo: ${{ github.repository }}" \
+            -d "$PAYLOAD")
+
+          HTTP_BODY=$(echo "$HTTP_RESPONSE" | head -n -1)
+          HTTP_CODE=$(echo "$HTTP_RESPONSE" | tail -n 1)
+
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "::warning::리뷰 서버 오류 (HTTP $HTTP_CODE)"
+            echo "text=⚠️ 리뷰 서버 응답 오류 (HTTP ${HTTP_CODE})" &gt;&gt; "$GITHUB_OUTPUT"
+          else
+            REVIEW_TEXT=$(echo "$HTTP_BODY" | jq -r '.review // "리뷰 내용을 가져올 수 없습니다."')
+            CHANGELOG_NOTICE=$(echo "$HTTP_BODY" | jq -r '.changelogNotice // empty')
+            {
+              echo "text&lt;&lt;REVIEW_EOF"
+              echo "$REVIEW_TEXT"
+              echo "REVIEW_EOF"
+            } &gt;&gt; "$GITHUB_OUTPUT"
+            if [ -n "$CHANGELOG_NOTICE" ]; then
+              echo "changelog_notice&lt;&lt;CHANGELOG_EOF"
+              echo "$CHANGELOG_NOTICE"
+              echo "CHANGELOG_EOF"
+            fi &gt;&gt; "$GITHUB_OUTPUT"
+          fi
+
+      - name: Post Review Comment
+        if: steps.check.outputs.skip == 'false'
+        uses: actions/github-script@v7
+        env:
+          REVIEW_TEXT: ${{ steps.review.outputs.text }}
+          CHANGELOG_NOTICE: ${{ steps.review.outputs.changelog_notice }}
+        with:
+          script: |
+            const parts = [
+              "## 🤖 AI 코드리뷰"
+            ];
+            if (process.env.CHANGELOG_NOTICE) {
+              parts.push("", process.env.CHANGELOG_NOTICE);
+            }
+            parts.push("", process.env.REVIEW_TEXT,
+              "\n---",
+              "&gt; *AI 리뷰는 참고용입니다. 최종 판단은 팀원이 직접 합니다.*"
+            );
+            const body = parts.join("\n");
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body
+            });</code></pre>
+                <div class="code-footer">
+                    <a th:replace="~{fragments/download :: btn('ai-review.yml 다운로드')}"></a>
+                </div>
+            </div>
+
+            <div class="secrets-table">
+                <div class="secrets-title">깃헙 리포지토리 환경변수 설정</div>
+                <div class="secrets-row">
+                    <code class="secrets-key">REVIEW_SERVER_URL</code>
+                    <span class="secrets-value" th:text="'https://' + ${domain}"></span>
+                    <button class="secrets-copy" onclick="copySecret(this)" th:attr="data-value='https://' + ${domain}">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    </button>
+                </div>
+                <div class="secrets-row">
+                    <code class="secrets-key">REVIEW_SECRET</code>
+                    <span class="secrets-value">서버에 설정한 인증 시크릿</span>
+                    <button class="btn-request" id="secret-request-btn"
+                            th:if="${slackEnabled}"
+                            onclick="toggleRequestForm()">시크릿 키 요청</button>
+                </div>
+                <div class="request-form" id="request-form" th:if="${slackEnabled}" style="display:none;">
+                    <div class="request-form-inner">
+                        <input type="text" id="req-github" class="request-input" placeholder="GitHub username" autocomplete="off">
+                        <input type="text" id="req-repo" class="request-input" placeholder="Repository (선택)" autocomplete="off">
+                        <button class="btn-submit" onclick="submitSecretRequest()">요청</button>
+                    </div>
+                    <div class="request-status" id="request-status"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+function copyDomain() {
+    var box = document.getElementById('domain-box');
+    var text = document.getElementById('domain-text');
+    var iconGlobe = document.getElementById('domain-icon-globe');
+    var iconCheck = document.getElementById('domain-icon-check');
+    navigator.clipboard.writeText(box.dataset.domain).then(function() {
+        text.textContent = 'Copied!';
+        iconGlobe.style.display = 'none';
+        iconCheck.style.display = 'block';
+        box.classList.add('hero-domain--copied');
+        setTimeout(function() {
+            text.textContent = box.dataset.domain;
+            iconGlobe.style.display = 'block';
+            iconCheck.style.display = 'none';
+            box.classList.remove('hero-domain--copied');
+        }, 1500);
+    });
+}
+
+function copySecret(btn) {
+    navigator.clipboard.writeText(btn.dataset.value).then(function() {
+        btn.classList.add('secrets-copy--done');
+        var orig = btn.innerHTML;
+        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
+        setTimeout(function() {
+            btn.classList.remove('secrets-copy--done');
+            btn.innerHTML = orig;
+        }, 1500);
+    });
+}
+
+function toggleRequestForm() {
+    var form = document.getElementById('request-form');
+    var btn = document.getElementById('secret-request-btn');
+    if (form.style.display === 'none') {
+        form.style.display = 'block';
+        btn.textContent = '취소';
+        btn.classList.add('btn-request--cancel');
+    } else {
+        form.style.display = 'none';
+        btn.textContent = '시크릿 키 요청';
+        btn.classList.remove('btn-request--cancel');
+        document.getElementById('request-status').textContent = '';
+    }
+}
+
+function submitSecretRequest() {
+    var github = document.getElementById('req-github').value.trim();
+    var repo = document.getElementById('req-repo').value.trim();
+    var status = document.getElementById('request-status');
+    var btn = document.querySelector('.btn-submit');
+
+    if (!github) {
+        status.textContent = 'GitHub username을 입력해주세요.';
+        status.className = 'request-status request-status--error';
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '전송 중...';
+    status.textContent = '';
+
+    fetch('/api/request-secret', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ githubUsername: github, githubRepo: repo })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        if (data.ok) {
+            status.textContent = data.message;
+            status.className = 'request-status request-status--success';
+            document.getElementById('req-github').value = '';
+            document.getElementById('req-repo').value = '';
+        } else {
+            status.textContent = data.error || '요청에 실패했습니다.';
+            status.className = 'request-status request-status--error';
+        }
+    })
+    .catch(function() {
+        status.textContent = '네트워크 오류가 발생했습니다.';
+        status.className = 'request-status request-status--error';
+    })
+    .finally(function() {
+        btn.disabled = false;
+        btn.textContent = '요청';
+    });
+}
+</script>
+
+<!-- Leaderboard -->
+<section class="section" id="leaderboard" th:if="${!topTeams.isEmpty()}">
+    <div class="section-header">
+        <span class="section-label">Leaderboard</span>
+        <h2 class="section-title">팀 활동 순위</h2>
+    </div>
+    <div class="lb-podium" th:if="${topTeams.size() >= 3}">
+        <div class="lb-podium-slot lb-podium--2">
+            <div class="lb-podium-card">
+                <div class="lb-podium-medal">
+                    <svg viewBox="0 0 24 24" width="28" height="28"><circle cx="12" cy="12" r="10" fill="#c0c0c0" opacity="0.2" stroke="#c0c0c0" stroke-width="1.5"/><path d="M12 6l1.5 3 3.5.5-2.5 2.5.5 3.5L12 14l-3 1.5.5-3.5L7 9.5l3.5-.5z" fill="#c0c0c0"/></svg>
+                </div>
+                <span class="lb-podium-rank">2</span>
+                <a class="lb-podium-name" th:href="'https://github.com/' + ${topTeams[1].repo}" target="_blank" th:text="${topTeams[1].teamName}">2nd</a>
+                <span class="lb-podium-count" th:text="${topTeams[1].reviewCount} + '건'">0건</span>
+            </div>
+        </div>
+        <div class="lb-podium-slot lb-podium--1">
+            <div class="lb-podium-card">
+                <div class="lb-podium-medal">
+                    <svg viewBox="0 0 24 24" width="42" height="42"><path d="M3 4l4 2.5L12 3l5 3.5L21 4v5c0 5-4 9-9 11C7 18 3 14 3 9V4z" fill="#ffd700" opacity="0.3" stroke="#ffd700" stroke-width="1.5"/><path d="M12 7l1 3h3l-2.5 1.8.9 3.2L12 13l-2.4 2 .9-3.2L8 10h3z" fill="#ffd700"/></svg>
+                </div>
+                <span class="lb-podium-rank">1</span>
+                <a class="lb-podium-name" th:href="'https://github.com/' + ${topTeams[0].repo}" target="_blank" th:text="${topTeams[0].teamName}">1st</a>
+                <span class="lb-podium-count" th:text="${topTeams[0].reviewCount} + '건'">0건</span>
+            </div>
+        </div>
+        <div class="lb-podium-slot lb-podium--3">
+            <div class="lb-podium-card">
+                <div class="lb-podium-medal">
+                    <svg viewBox="0 0 24 24" width="28" height="28"><circle cx="12" cy="12" r="10" fill="#cd7f32" opacity="0.2" stroke="#cd7f32" stroke-width="1.5"/><path d="M12 6l1.5 3 3.5.5-2.5 2.5.5 3.5L12 14l-3 1.5.5-3.5L7 9.5l3.5-.5z" fill="#cd7f32"/></svg>
+                </div>
+                <span class="lb-podium-rank">3</span>
+                <a class="lb-podium-name" th:href="'https://github.com/' + ${topTeams[2].repo}" target="_blank" th:text="${topTeams[2].teamName}">3rd</a>
+                <span class="lb-podium-count" th:text="${topTeams[2].reviewCount} + '건'">0건</span>
+            </div>
+        </div>
+    </div>
+    <a class="changelog-more" th:href="@{/leaderboard}">
+        전체 리더보드 보기 &rarr;
+    </a>
+    <a class="changelog-more" th:href="@{/stats}" style="margin-top:8px;display:inline-block">
+        서비스 통계 보기 &rarr;
+    </a>
+</section>
+
+<!-- Changelog -->
+<section class="section section--alt" id="changelog">
+    <div class="section-header">
+        <span class="section-label">Updates</span>
+        <h2 class="section-title">서비스 변경사항</h2>
+    </div>
+    <div class="changelog-timeline" th:if="${!changelog.isEmpty()}">
+        <div class="changelog-item" th:each="entry : ${changelog}" th:attr="id=${entry.anchor()}">
+            <div class="changelog-dot"></div>
+            <div class="changelog-content">
+                <div class="changelog-meta">
+                    <span class="changelog-date" th:text="${entry.date}"></span>
+                    <span class="changelog-tag" th:classappend="' changelog-tag--' + ${entry.category}"
+                          th:text="${entry.category == 'feature'} ? '기능' : (${entry.category == 'improvement'} ? '개선' : '수정')"></span>
+                    <span class="changelog-new" th:if="${entry.isNew()}">N</span>
+                </div>
+                <a class="changelog-title" th:href="@{/release} + '#' + ${entry.anchor()}" th:text="${entry.title}"></a>
+                <p class="changelog-desc" th:if="${entry.description}" th:text="${entry.description}"></p>
+                <a class="changelog-action" th:if="${entry.action}" th:href="${entry.actionUrl} ?: @{/ai-review.yml}" th:text="${entry.action}"></a>
+            </div>
+        </div>
+        <a class="changelog-more" th:if="${hasMoreChangelog}" th:href="@{/release}">
+            전체 변경사항 보기 &rarr;
+        </a>
+    </div>
+    <p class="changelog-empty" th:if="${changelog.isEmpty()}">아직 등록된 변경사항이 없습니다.</p>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <p>Spring Boot 3.5 + Spring AI 1.0 + Java 21</p>
+</footer>
+
+</body>
+</html>

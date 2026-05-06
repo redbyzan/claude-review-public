@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>리더보드 — AI Code Review</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css?v=20260420a}">
+</head>
+<body>
+
+<section class="release-header">
+    <a class="release-back" th:href="@{/}">&larr; 메인으로</a>
+    <h1 class="release-title">리더보드</h1>
+    <p class="release-subtitle">AI 코드리뷰 팀 활동 순위</p>
+</section>
+
+<section class="leaderboard">
+
+    <!-- Summary Stats -->
+    <div class="lb-summary">
+        <div class="lb-stat">
+            <span class="lb-stat-value" th:text="${totalStats.totalReviews}">0</span>
+            <span class="lb-stat-label">총 리뷰</span>
+        </div>
+        <div class="lb-stat">
+            <span class="lb-stat-value" th:text="${totalStats.totalTeams}">0</span>
+            <span class="lb-stat-label">참여 팀</span>
+        </div>
+        <div class="lb-stat">
+            <span class="lb-stat-value" th:text="${#numbers.formatInteger(totalStats.totalDiffBytes / 1024, 1)}">0</span>
+            <span class="lb-stat-label">총 리뷰 코드 (KB)</span>
+        </div>
+    </div>
+
+    <!-- Podium (unchanged) -->
+    <div class="lb-podium" th:if="${teams.size() >= 3}">
+        <div class="lb-podium-slot lb-podium--2">
+            <div class="lb-podium-card">
+                <div class="lb-podium-medal">
+                    <svg viewBox="0 0 24 24" width="28" height="28"><circle cx="12" cy="12" r="10" fill="#c0c0c0" opacity="0.2" stroke="#c0c0c0" stroke-width="1.5"/><path d="M12 6l1.5 3 3.5.5-2.5 2.5.5 3.5L12 14l-3 1.5.5-3.5L7 9.5l3.5-.5z" fill="#c0c0c0"/></svg>
+                </div>
+                <span class="lb-podium-rank">2</span>
+                <a class="lb-podium-name" th:href="'https://github.com/' + ${teams[1].repo}" target="_blank" th:text="${teams[1].teamName}">2nd</a>
+                <span class="lb-podium-count" th:text="${teams[1].reviewCount} + '건'">0건</span>
+            </div>
+        </div>
+        <div class="lb-podium-slot lb-podium--1">
+            <div class="lb-podium-card">
+                <div class="lb-podium-medal">
+                    <svg viewBox="0 0 24 24" width="36" height="36"><path d="M3 4l4 2.5L12 3l5 3.5L21 4v5c0 5-4 9-9 11C7 18 3 14 3 9V4z" fill="#ffd700" opacity="0.3" stroke="#ffd700" stroke-width="1.5"/><path d="M12 7l1 3h3l-2.5 1.8.9 3.2L12 13l-2.4 2 .9-3.2L8 10h3z" fill="#ffd700"/></svg>
+                </div>
+                <span class="lb-podium-rank">1</span>
+                <a class="lb-podium-name" th:href="'https://github.com/' + ${teams[0].repo}" target="_blank" th:text="${teams[0].teamName}">1st</a>
+                <span class="lb-podium-count" th:text="${teams[0].reviewCount} + '건'">0건</span>
+            </div>
+        </div>
+        <div class="lb-podium-slot lb-podium--3">
+            <div class="lb-podium-card">
+                <div class="lb-podium-medal">
+                    <svg viewBox="0 0 24 24" width="28" height="28"><circle cx="12" cy="12" r="10" fill="#cd7f32" opacity="0.2" stroke="#cd7f32" stroke-width="1.5"/><path d="M12 6l1.5 3 3.5.5-2.5 2.5.5 3.5L12 14l-3 1.5.5-3.5L7 9.5l3.5-.5z" fill="#cd7f32"/></svg>
+                </div>
+                <span class="lb-podium-rank">3</span>
+                <a class="lb-podium-name" th:href="'https://github.com/' + ${teams[2].repo}" target="_blank" th:text="${teams[2].teamName}">3rd</a>
+                <span class="lb-podium-count" th:text="${teams[2].reviewCount} + '건'">0건</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Race Track -->
+    <div class="race" th:if="${!teams.isEmpty()}" role="list" aria-label="리더보드 경주 트랙">
+        <div th:each="team, iter : ${teams}"
+             class="race-lane"
+             th:classappend="${iter.index == 0} ? 'race-lane--leader' : (${iter.index < 3} ? 'race-lane--top' : '')"
+             th:attr="data-idx=${iter.index}, data-score=${team.reviewCount}"
+             th:style="'--delay:' + ${iter.index * 0.15} + 's'"
+             role="listitem"
+             tabindex="0"
+             aria-expanded="false"
+             onclick="toggleDetail(this)">
+            <div class="race-lane-row">
+                <span class="race-rank"
+                      th:classappend="${iter.index == 0} ? 'race-rank--gold' : (${iter.index == 1} ? 'race-rank--silver' : (${iter.index == 2} ? 'race-rank--bronze' : ''))"
+                      th:text="${iter.index + 1}">1</span>
+                <span class="race-team">
+                    <a class="race-team-name" th:href="'https://github.com/' + ${team.repo}" target="_blank" th:text="${team.teamName}" onclick="event.stopPropagation()">Team</a>
+                    <span class="race-team-chevron"></span>
+                </span>
+                <div class="race-track">
+                    <div class="race-progress"
+                         th:with="max=${teams[0].reviewCount > 0 ? teams[0].reviewCount : 1}, pct=${(team.reviewCount * 100) / max}"
+                         th:style="'--target:' + ${pct} + '%; --delay:' + ${iter.index * 0.15} + 's'">
+                        <span class="race-rider" th:text="${iter.index == 0} ? '&#x1F3C6;' : (${iter.index < 3} ? '&#x1F3C7;' : '&#x1F3C3;')"></span>
+                    </div>
+                </div>
+                <span class="race-score" data-countup="true" th:attr="data-target=${team.reviewCount}">0</span>
+            </div>
+            <!-- Detail Panel (hidden by default) -->
+            <div class="race-detail" aria-hidden="true">
+                <div class="race-detail-grid">
+                    <div class="race-detail-item">
+                        <span class="race-detail-label">평균 PR</span>
+                        <span class="race-detail-value" th:text="${#numbers.formatInteger(team.avgDiffSize, 1)} + ' B'">0 B</span>
+                    </div>
+                    <div class="race-detail-item">
+                        <span class="race-detail-label">톤 비율</span>
+                        <div class="lb-bar">
+                            <div class="lb-bar-mentor" th:style="'width:' + ${(team.mentorCount * 100) / (team.reviewCount > 0 ? team.reviewCount : 1)} + '%'"></div>
+                        </div>
+                        <span class="lb-bar-label" th:text="${team.mentorCount} + ' : ' + ${team.cynicCount}">0:0</span>
+                    </div>
+                    <div class="race-detail-item">
+                        <span class="race-detail-label">AI 모델</span>
+                        <span class="race-detail-value"><span class="lb-model-name" th:text="${team.topModel()}">-</span></span>
+                    </div>
+                    <div class="race-detail-item">
+                        <span class="race-detail-label">토큰</span>
+                        <span class="race-detail-value race-detail-mono" th:text="${#numbers.formatInteger(team.totalTokens, 1)}">0</span>
+                    </div>
+                    <div class="race-detail-item">
+                        <span class="race-detail-label">최근 PR</span>
+                        <span class="race-detail-value">
+                            <a th:if="${team.githubPrUrl() != null}" class="lb-pr-link" th:href="${team.githubPrUrl()}" target="_blank" th:text="${team.lastPrTitle}">PR</a>
+                            <span th:if="${team.githubPrUrl() == null}" th:text="${team.lastReviewTime}">-</span>
+                        </span>
+                    </div>
+                    <div class="race-detail-item" th:if="${team.githubPrUrl() != null}">
+                        <span class="race-detail-label">시간</span>
+                        <span class="race-detail-value race-detail-dim" th:text="${team.lastReviewTime}">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="lb-empty" th:if="${teams.isEmpty()}">
+        <p>아직 리뷰 데이터가 없습니다.</p>
+    </div>
+
+</section>
+
+<footer class="footer">
+    <p>Spring Boot 3.5 + Spring AI 1.0 + Java 21</p>
+</footer>
+
+<script>
+function toggleDetail(lane) {
+    var wasOpen = lane.classList.contains('race-lane--open');
+
+    document.querySelectorAll('.race-lane--open').forEach(function(el) {
+        el.classList.remove('race-lane--open');
+        el.setAttribute('aria-expanded', 'false');
+        var d = el.querySelector('.race-detail');
+        d.setAttribute('aria-hidden', 'true');
+        d.style.maxHeight = '';
+    });
+
+    if (!wasOpen) {
+        lane.classList.add('race-lane--open');
+        lane.setAttribute('aria-expanded', 'true');
+        var detail = lane.querySelector('.race-detail');
+        detail.style.maxHeight = detail.scrollHeight + 'px';
+        detail.setAttribute('aria-hidden', 'false');
+    }
+}
+
+// keyboard support
+document.querySelectorAll('.race-lane').forEach(function(lane) {
+    lane.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggleDetail(lane);
+        }
+    });
+});
+
+// Score count-up animation
+function animateScores() {
+    document.querySelectorAll('[data-countup]').forEach(function(el) {
+        var target = parseInt(el.getAttribute('data-target'), 10);
+        var delay = parseFloat(el.closest('.race-lane').style.getPropertyValue('--delay')) || 0;
+        var startMs = performance.now() + (delay + 0.8) * 1000; // start after lane animation
+        var duration = 800;
+
+        function tick(now) {
+            var elapsed = now - startMs;
+            if (elapsed < 0) { requestAnimationFrame(tick); return; }
+            var progress = Math.min(elapsed / duration, 1);
+            // ease-out quad
+            var eased = 1 - (1 - progress) * (1 - progress);
+            el.textContent = Math.round(target * eased);
+            if (progress < 1) { requestAnimationFrame(tick); }
+        }
+        requestAnimationFrame(tick);
+    });
+}
+
+animateScores();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,115 @@
+services:
+  npm:
+    image: jc21/nginx-proxy-manager:latest
+    ports:
+      - "80:80"      # HTTP
+      - "443:443"    # HTTPS
+      - "81:81"      # NPM 관리 UI
+    volumes:
+      - npm-data:/data
+      - npm-letsencrypt:/etc/letsencrypt
+    depends_on:
+      review-server:
+        condition: service_healthy
+    networks:
+      - review-net
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared-tunnel
+    # Remote-managed 터널(Dashboard 설정)이 호스트 IP(100.x.x.x)를 목적지로 사용할 경우,
+    # Docker 네트워크 내부에서는 접근이 불가능하므로 host 모드를 사용합니다.
+    network_mode: host
+    command: tunnel --config /etc/cloudflared/config.yml run
+    volumes:
+      - ./cloudflared/config.yml:/etc/cloudflared/config.yml:ro
+      - ./cloudflared/credentials.json:/etc/cloudflared/credentials.json:ro
+    depends_on:
+      review-server:
+        condition: service_healthy
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  review-server:
+    build: .
+    env_file: .env
+    ports:
+      - "0.0.0.0:8080:8080" # cloudflared(host 모드)가 접근할 수 있도록 전체 허용
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./review-logs:/app/review-logs
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+    networks:
+      - review-net
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  prometheus:
+    image: prom/prometheus:latest
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.time=365d'
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - review-net
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "127.0.0.1:33000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD must be set in .env}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+      - GF_SERVER_ROOT_URL=https://monitoring.example.com
+      - GF_ALERTING_EXECUTE_ALERT_RULES=true
+      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL:-}
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    networks:
+      - review-net
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  npm-data:
+  npm-letsencrypt:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  review-net:
+    driver: bridge

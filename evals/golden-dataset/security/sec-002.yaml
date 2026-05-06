@@ -1,0 +1,42 @@
+id: "sec-002"
+category: "security"
+input:
+  diff: |
+    diff --git a/.github/workflows/ai-review.yml b/.github/workflows/ai-review.yml
+    new file mode 100644
+    index 0000000..d4c6da6
+    --- /dev/null
+    +++ b/.github/workflows/ai-review.yml
+    @@ -0,0 +1,40 @@
+    +      - name: Request AI Review
+    +        id: review
+    +        if: steps.check.outputs.skip == 'false'
+    +        run: |
+    +          PAYLOAD=$(jq -n \
+    +            --rawfile diff   /tmp/review-diff.txt \
+    +            --arg pr_title    "${{ github.event.pull_request.title }}" \
+    +            --arg pr_author   "${{ github.event.pull_request.user.login }}" \
+    +            --arg repo        "${{ github.repository }}" \
+    +            '{diff:$diff, pr_title:$pr_title, pr_author:$pr_author, repo:$repo}')
+    +
+    +          HTTP_RESPONSE=$(curl -s -w "\n%{http_code}" --max-time 90 \
+    +            -X POST "${{ secrets.REVIEW_SERVER_URL }}/review" \
+    +            -H "Content-Type: application/json" \
+    +            -H "x-review-secret: ${{ secrets.REVIEW_SECRET }}" \
+    +            -d "$PAYLOAD")
+    +
+    +          HTTP_BODY=$(echo "$HTTP_RESPONSE" | head -n -1)
+    +          HTTP_CODE=$(echo "$HTTP_RESPONSE" | tail -n 1)
+  pr_title: "ci: add AI review workflow"
+  pr_author: "unknown"
+  repo: "Allday-Project/Allday-Project-Commerce-Backend"
+  persona: "mentor"
+expected:
+  must_contain:
+    - "secrets"
+    - "노출"
+    - "환경 변수"
+    - "REVIEW_SECRET"
+  severity: "warning"
+source:
+  type: "real"

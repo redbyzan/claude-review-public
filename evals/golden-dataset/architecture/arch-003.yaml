@@ -1,0 +1,32 @@
+id: "arch-003"
+category: "architecture"
+input:
+  diff: |
+    diff --git a/src/main/java/com/example/category/service/CategoryService.java b/src/main/java/com/example/category/service/CategoryService.java
+    index 112233..445566 100644
+    --- a/src/main/java/com/example/category/service/CategoryService.java
+    +++ b/src/main/java/com/example/category/service/CategoryService.java
+    @@ -15,8 +15,8 @@ public class CategoryService {
+             // 4. 불러온 ADMIN의 승인 상태 검증
+             validateAdminStatus(admin);
+
+    -        // 5. 카테고리 이름 중복 검증
+    +        // 4. 카테고리 이름 중복 검증
+             if (categoryRepository.existsByName(request.name())) {
+                 throw new CategoryException(ErrorCode.CATEGORY_ALREADY_EXISTS);
+             }
+    -        // 6. 카테고리 생성 및 저장
+    +        // 5. 카테고리 생성 및 저장
+  pr_title: "refactor: extract validation methods in CategoryService"
+  pr_author: "dev-user"
+  repo: "Ready-s7/Readys7-project"
+  persona: "cynic"
+expected:
+  must_contain:
+    - "주석"
+    - "번호"
+    - "검증"
+    - "메서드"
+  severity: "info"
+source:
+  type: "synthetic"

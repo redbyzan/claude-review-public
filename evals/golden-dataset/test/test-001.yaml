@@ -1,0 +1,53 @@
+id: "test-001"
+category: "test"
+input:
+  diff: |
+    diff --git a/src/test/java/com/example/product/controller/ProductControllerTest.java b/src/test/java/com/example/product/controller/ProductControllerTest.java
+    new file mode 100644
+    --- /dev/null
+    +++ b/src/test/java/com/example/product/controller/ProductControllerTest.java
+    @@ -0,0 +1,35 @@
+    +@WebMvcTest(ProductController.class)
+    +class ProductControllerTest {
+    +
+    +    @Autowired
+    +    MockMvc mockMvc;
+    +
+    +    @MockBean
+    +    ProductService productService;
+    +
+    +    @Test
+    +    void createProduct_success() throws Exception {
+    +        ProductCreateRequest req = new ProductCreateRequest("title", "desc", 10000, "SALE", 1L);
+    +        given(productService.createProduct(any(), any())).willReturn(ProductResponse.from(product));
+    +
+    +        mockMvc.perform(post("/api/products")
+    +                .contentType(MediaType.APPLICATION_JSON)
+    +                .content(objectMapper.writeValueAsString(req)))
+    +            .andExpect(status().isOk());
+    +    }
+    +
+    +    @Test
+    +    void updateProduct_success() throws Exception {
+    +        ProductUpdateRequest req = new ProductUpdateRequest("newTitle", null, null, null, null, null);
+    +        given(productService.updateProduct(any(), any(), any())).willReturn(ProductResponse.from(product));
+    +
+    +        mockMvc.perform(patch("/api/products/1")
+    +                .contentType(MediaType.APPLICATION_JSON)
+    +                .content(objectMapper.writeValueAsString(req)))
+    +            .andExpect(status().isOk());
+    +    }
+    +}
+  pr_title: "test: add ProductController unit tests"
+  pr_author: "fryzke"
+  repo: "Team-5th-Chat-prj/Team-5th"
+  persona: "cynic"
+expected:
+  must_contain:
+    - "AuthenticationPrincipal"
+    - "인증"
+    - "MockMvc"
+    - "SecurityContext"
+  severity: "warning"
+source:
+  type: "real"

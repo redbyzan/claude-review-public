@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>리뷰 CTA 버튼 — AI Code Review</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css?v=20260418a}">
+</head>
+<body>
+
+<section class="release-header">
+    <a class="release-back" th:href="@{/release}">&larr; 릴리즈 노트</a>
+    <h1 class="release-title">리뷰에 액션 버튼 추가</h1>
+    <p class="release-subtitle">
+        <span th:text="${entry.date}"></span>
+        <span class="changelog-tag" style="margin-left:8px; vertical-align:middle;"
+              th:classappend="' changelog-tag--' + ${entry.category}"
+              th:text="${entry.category == 'feature'} ? '기능' : (${entry.category == 'improvement'} ? '개선' : '수정')"></span>
+    </p>
+</section>
+
+<section class="incident">
+
+    <!-- Overview -->
+    <div class="incident-card">
+        <h2 class="incident-heading">무엇이 바뀌었나요</h2>
+        <p>AI 리뷰 코멘트에 <strong>업데이트 가이드</strong>, <strong>질문하기</strong> 버튼이 추가되었습니다.<br>
+        리뷰를 읽고 나서 "다음에 뭘 해야 하지?"라고 고민할 필요 없이,<br>
+        <strong>버튼을 클릭하면 바로 다음 단계로 이동</strong>할 수 있습니다.</p>
+    </div>
+
+    <!-- Scenario -->
+    <div class="incident-card">
+        <h2 class="incident-heading">시나리오 — 리뷰를 받은 수강생의 경험</h2>
+
+        <div class="incident-log">
+            <div class="incident-log-item">
+                <div class="incident-log-body">
+                    <strong>Before — 버튼이 없을 때</strong>
+                    <pre class="incident-code">수강생이 PR에 AI 리뷰 코멘트를 받음
+  → 리뷰를 읽고 권장 개선사항을 확인
+  → "워크플로우를 어떻게 업데이트하지?" → 구글링 or 슬랙 질문
+  → 답변을 기다리는 동안 개발 흐름이 끊김
+
+문제: 리뷰를 읽었지만 "다음 행동"이 명확하지 않음</pre>
+                </div>
+            </div>
+            <div class="incident-log-item incident-log-item--success">
+                <div class="incident-log-body">
+                    <strong>After — CTA 버튼 추가</strong>
+                    <pre class="incident-code">수강생이 PR에 AI 리뷰 코멘트를 받음
+  → 리뷰를 읽고 권장 개선사항을 확인
+  → 리뷰 중간에 [업데이트 가이드 확인] 버튼 클릭 → 가이드 페이지로 이동
+  → 리뷰 하단에 [워크플로우 업데이트] [질문하기] 버튼
+  → 버튼 하나로 다음 행동 즉시 실행
+
+효과: 리뷰 → 액션 전환이 1클릭으로 단축</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Where buttons appear -->
+    <div class="incident-card">
+        <h2 class="incident-heading">버튼은 어디에 나오나요</h2>
+        <p>모든 AI 리뷰 코멘트에 자동으로 추가됩니다. 별도 설정이 필요하지 않습니다.</p>
+
+        <table class="incident-table">
+            <thead><tr><th>위치</th><th>버튼</th><th>클릭 시 이동</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>리뷰 중간<br><span style="color:#6b7280; font-size:0.85em;">(권장 개선 직후)</span></td>
+                    <td><strong>업데이트 가이드 확인</strong></td>
+                    <td>릴리즈 노트 페이지</td>
+                </tr>
+                <tr>
+                    <td rowspan="3" style="vertical-align:top;">리뷰 하단<br><span style="color:#6b7280; font-size:0.85em;">(마지막 줄)</span></td>
+                    <td><strong>워크플로우 업데이트</strong></td>
+                    <td>저장소 설치 가이드</td>
+                </tr>
+                <tr>
+                    <td><strong>업데이트 가이드 확인</strong></td>
+                    <td>릴리즈 노트 페이지</td>
+                </tr>
+                <tr>
+                    <td><strong>질문하기</strong></td>
+                    <td>@sparta 멘션 가이드</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Design -->
+    <div class="incident-card">
+        <h2 class="incident-heading">어떻게 만들었나요</h2>
+        <p>GitHub PR 코멘트에서는 일반적인 HTML 버튼이나 JavaScript를 사용할 수 없습니다.<br>
+        대신 <strong>Shields.io 뱃지 이미지</strong>를 버튼처럼 사용합니다:</p>
+        <pre class="incident-code">GitHub Markdown에서 HTML &lt;button&gt; 사용 불가
+→ 이미지 + 링크 조합으로 버튼 효과
+→ Shields.io: URL 파라미터로 뱃지 동적 생성
+→ 결과: PR 코멘트에서 실제 버튼처럼 보이고 작동</pre>
+
+        <p style="margin-top:16px;">버튼 문구, 색상, 링크 URL은 서버 설정에서 관리하므로<br>
+        코드 수정 없이 운영 중에 변경할 수 있습니다.</p>
+    </div>
+
+    <!-- Reliability -->
+    <div class="incident-card">
+        <h2 class="incident-heading">버튼이 항상 나온다고 어떻게 보장하나요</h2>
+        <p>3계층 방어 구조로 <strong>최소 1개 이상의 버튼 세트가 항상 노출</strong>됩니다:</p>
+        <table class="incident-table incident-table--compare" style="margin-top:12px;">
+            <thead><tr><th>계층</th><th>방식</th><th>보장</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>하단 CTA</td>
+                    <td>문자열 덧붙이기 (AI 응답 무관)</td>
+                    <td><strong>100%</strong></td>
+                </tr>
+                <tr>
+                    <td>중간 CTA</td>
+                    <td>정규식 매칭 (AI 응답 포맷 의존)</td>
+                    <td>best-effort</td>
+                </tr>
+                <tr>
+                    <td>모니터링</td>
+                    <td>Prometheus 메트릭으로 삽입 성공/실패 추적</td>
+                    <td>장애 조기 감지</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- What this means for users -->
+    <div class="incident-card">
+        <h2 class="incident-heading">수강생에게 어떤 의미인가요</h2>
+        <div class="incident-log">
+            <div class="incident-log-item incident-log-item--success">
+                <div class="incident-log-body">
+                    <strong>리뷰 후 다음 행동이 명확해집니다</strong>
+                    <p>리뷰를 읽은 후 바로 워크플로우를 업데이트하거나,<br>
+                    @sparta에게 질문할 수 있습니다. 슬랙이나 구글링으로 방법을 찾을 필요가 없습니다.</p>
+                </div>
+            </div>
+            <div class="incident-log-item">
+                <div class="incident-log-body">
+                    <strong>추가 설정 불필요</strong>
+                    <p>기존 <code>.github/workflows/ai-review.yml</code> 그대로 사용하세요.<br>
+                    모든 리뷰에 자동으로 버튼이 추가됩니다.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Development process -->
+    <div class="incident-card" style="opacity:0.92;">
+        <h2 class="incident-heading">개발 과정 <span style="font-size:0.75em; font-weight:400; color:#6b7280;">(참고용)</span></h2>
+        <div class="incident-log">
+            <div class="incident-log-item">
+                <span class="incident-log-time">스펙 작성</span>
+                <div class="incident-log-body">
+                    <strong>Issue #34 — Gemini와 토론하며 구체화</strong>
+                    <p>초기 아이디어는 "리뷰에 버튼을 넣자"였습니다.<br>
+                    Gemini와 토론하며 GitHub Markdown의 제약, Shields.io 뱃지 활용법,<br>
+                    서버 측 삽입 vs YAML 후처리 등 기술적 대안을 검토했습니다.</p>
+                </div>
+            </div>
+            <div class="incident-log-item">
+                <span class="incident-log-time">구현</span>
+                <div class="incident-log-body">
+                    <strong>ReviewService에 injectCTA() 추가</strong>
+                    <p>리뷰 후처기 파이프라인에 CTA 삽입 단계를 추가했습니다.<br>
+                    URL은 환경변수로 관리하고, 기능 토글로 on/off 가능합니다.</p>
+                </div>
+            </div>
+            <div class="incident-log-item">
+                <span class="incident-log-time">개밥먹기</span>
+                <div class="incident-log-body">
+                    <strong>AI 리뷰가 코드를 리뷰 — 3차례 피드백 반영</strong>
+                    <p>PR을 열자 AI 리뷰가 자동으로 실행되었습니다.<br>
+                    시니컬 페르소나가 지적한 3가지를 모두 반영했습니다:</p>
+                    <table class="incident-table" style="margin-top:8px;">
+                        <tr><th>지적</th><th>반영</th></tr>
+                        <tr><td>URL 검증 누락</td><td>@PostConstruct 검증 추가</td></tr>
+                        <tr><td>Silent Failure</td><td>log.warn 방어 로직 추가</td></tr>
+                        <tr><td>서버 셧다운 위험</td><td>Graceful Degradation 적용</td></tr>
+                    </table>
+                </div>
+            </div>
+            <div class="incident-log-item">
+                <span class="incident-log-time">보장</span>
+                <div class="incident-log-body">
+                    <strong>"항상 나온다고 어떻게 보장하지?" → 3계층 방어</strong>
+                    <p>하단 CTA는 100% 보장(문자열 덧붙이기).<br>
+                    중간 CTA 실패 시 하단에 가이드 링크 포함.<br>
+                    Prometheus 메트릭으로 실패율 추적.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+<footer class="footer">
+    <p>Spring Boot 3.5 + Spring AI 1.0 + Java 21</p>
+</footer>
+
+</body>
+</html>

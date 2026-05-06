@@ -1,0 +1,27 @@
+id: "exc-003"
+category: "exception"
+input:
+  diff: |
+    diff --git a/src/main/java/com/example/ticket/domain/booking/service/BookingService.java b/src/main/java/com/example/ticket/domain/booking/service/BookingService.java
+    index 111111..222222 100644
+    --- a/src/main/java/com/example/ticket/domain/booking/service/BookingService.java
+    +++ b/src/main/java/com/example/ticket/domain/booking/service/BookingService.java
+    @@ -25,6 +25,10 @@ public class BookingService {
+    +    private String generateTicketCode(Booking booking) {
+    +        String sectionName = booking.getSection().getName();
+    +        String abbr = sectionName.substring(0, 2);
+    +        return abbr + "-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    +    }
+  pr_title: "feat: generate ticket code from section name"
+  pr_author: "jiiimni"
+  repo: "6team-Plus-project-sparta/Ticket_JAVARA"
+  persona: "mentor"
+expected:
+  must_contain:
+    - "substring"
+    - "길이"
+    - "StringIndexOutOfBoundsException"
+    - "검증"
+  severity: "critical"
+source:
+  type: "real"

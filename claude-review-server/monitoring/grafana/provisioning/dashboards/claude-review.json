@@ -1,0 +1,201 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "title": "Review Success / Fail",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "rate(review_requests_total{application=\"claude-review-server\"}[5m])", "legendFormat": "{{status}}", "datasource": { "type": "prometheus", "uid": "prometheus" } }
+      ],
+      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] }
+    },
+    {
+      "title": "Review Duration (p50 / p95 / p99)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(review_duration_seconds_bucket{application=\"claude-review-server\"}[5m]))", "legendFormat": "p50", "datasource": { "type": "prometheus", "uid": "prometheus" } },
+        { "expr": "histogram_quantile(0.95, rate(review_duration_seconds_bucket{application=\"claude-review-server\"}[5m]))", "legendFormat": "p95", "datasource": { "type": "prometheus", "uid": "prometheus" } },
+        { "expr": "histogram_quantile(0.99, rate(review_duration_seconds_bucket{application=\"claude-review-server\"}[5m]))", "legendFormat": "p99", "datasource": { "type": "prometheus", "uid": "prometheus" } }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] }
+    },
+    {
+      "title": "Reviews by Persona",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "rate(review_requests_total{application=\"claude-review-server\", status=\"success\"}[5m])", "legendFormat": "{{persona}}", "datasource": { "type": "prometheus", "uid": "prometheus" } }
+      ],
+      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] }
+    },
+    {
+      "title": "Reviews by Model",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "rate(review_requests_total{application=\"claude-review-server\", status=\"success\"}[5m])", "legendFormat": "{{model}}", "datasource": { "type": "prometheus", "uid": "prometheus" } }
+      ],
+      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] }
+    },
+    {
+      "title": "Gemini Fallback Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "rate(review_fallback_total{application=\"claude-review-server\", status=\"success\"}[5m])", "legendFormat": "fallback success", "datasource": { "type": "prometheus", "uid": "prometheus" } },
+        { "expr": "rate(review_fallback_total{application=\"claude-review-server\", status=\"fail\"}[5m])", "legendFormat": "fallback fail", "datasource": { "type": "prometheus", "uid": "prometheus" } }
+      ],
+      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] }
+    },
+    {
+      "title": "Total Reviews (Cumulative)",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "review_requests_total{application=\"claude-review-server\", status=\"success\"}", "legendFormat": "{{persona}}", "datasource": { "type": "prometheus", "uid": "prometheus" } }
+      ],
+      "fieldConfig": { "defaults": { "unit": "none" }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "title": "Token Usage (Input / Output)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "rate(review_tokens_total{application=\"claude-review-server\"}[5m])", "legendFormat": "{{type}}", "datasource": { "type": "prometheus", "uid": "prometheus" } }
+      ],
+      "fieldConfig": { "defaults": { "unit": "tokens/sec" }, "overrides": [] }
+    },
+    {
+      "title": "HTTP Requests (All Endpoints)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "rate(http_server_requests_seconds_count{application=\"claude-review-server\"}[5m])", "legendFormat": "{{uri}} {{status}}", "datasource": { "type": "prometheus", "uid": "prometheus" } }
+      ],
+      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] }
+    },
+    {
+      "title": "JVM Heap Memory",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "jvm_memory_used_bytes{application=\"claude-review-server\", area=\"heap\"}", "legendFormat": "used", "datasource": { "type": "prometheus", "uid": "prometheus" } },
+        { "expr": "jvm_memory_max_bytes{application=\"claude-review-server\", area=\"heap\"}", "legendFormat": "max", "datasource": { "type": "prometheus", "uid": "prometheus" } }
+      ],
+      "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] }
+    },
+    {
+      "title": "System CPU / Process CPU",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "system_cpu_usage{application=\"claude-review-server\"}", "legendFormat": "system", "datasource": { "type": "prometheus", "uid": "prometheus" } },
+        { "expr": "process_cpu_usage{application=\"claude-review-server\"}", "legendFormat": "process", "datasource": { "type": "prometheus", "uid": "prometheus" } }
+      ],
+      "fieldConfig": { "defaults": { "unit": "percentunit", "max": 1, "min": 0 }, "overrides": [] }
+    },
+
+    {
+      "title": "Rate Limit Blocked",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 32 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "increase(rate_limit_blocked_total{application=\"claude-review-server\"}[5m])", "legendFormat": "blocked", "datasource": { "type": "prometheus", "uid": "prometheus" } }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "red" } }, "overrides": [] }
+    },
+    {
+      "title": "Review Fallback / Failures",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 32 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "increase(review_fallback_total{application=\"claude-review-server\"}[5m])", "legendFormat": "{{status}}", "datasource": { "type": "prometheus", "uid": "prometheus" } },
+        { "expr": "increase(github_api_errors_total{application=\"claude-review-server\"}[5m])", "legendFormat": "github errors", "datasource": { "type": "prometheus", "uid": "prometheus" } }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "orange" } }, "overrides": [] }
+    },
+    {
+      "title": "Error Log Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 32 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "rate(logback_events_total{application=\"claude-review-server\", level=\"error\"}[5m])", "legendFormat": "errors/sec", "datasource": { "type": "prometheus", "uid": "prometheus" } },
+        { "expr": "rate(logback_events_total{application=\"claude-review-server\", level=\"warn\"}[5m])", "legendFormat": "warns/sec", "datasource": { "type": "prometheus", "uid": "prometheus" } }
+      ],
+      "fieldConfig": { "defaults": { "unit": "cps" }, "overrides": [] }
+    },
+
+    {
+      "title": "Reviews by Team",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 40 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "review_metadata_total{application=\"claude-review-server\"}", "legendFormat": "{{team}}", "datasource": { "type": "prometheus", "uid": "prometheus" } }
+      ],
+      "fieldConfig": { "defaults": { "unit": "none" }, "overrides": [] },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "title": "CTA Interactions",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 40 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "increase(review_cta_insertion_total{application=\"claude-review-server\"}[5m])", "legendFormat": "{{type}}", "datasource": { "type": "prometheus", "uid": "prometheus" } }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] }
+    },
+    {
+      "title": "Conversation Requests",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 40 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "increase(review_conversation_requests_total{application=\"claude-review-server\"}[5m])", "legendFormat": "questions", "datasource": { "type": "prometheus", "uid": "prometheus" } },
+        { "expr": "increase(rebuttal_requests_total{application=\"claude-review-server\"}[5m])", "legendFormat": "rebuttals", "datasource": { "type": "prometheus", "uid": "prometheus" } }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] }
+    },
+    {
+      "title": "AI Token Usage by Model",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 40 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "increase(gen_ai_client_token_usage_total{application=\"claude-review-server\"}[1h])", "legendFormat": "{{gen_ai_request_model}} {{gen_ai_token_type}}", "datasource": { "type": "prometheus", "uid": "prometheus" } }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] }
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["claude-review"],
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "",
+  "title": "AI Code Review Dashboard",
+  "uid": "claude-review",
+  "version": 3
+}

@@ -1,0 +1,30 @@
+id: "read-002"
+category: "readability"
+input:
+  diff: |
+    diff --git a/src/main/java/com/example/product/service/ProductService.java b/src/main/java/com/example/product/service/ProductService.java
+    index aaa111..bbb222 100644
+    --- a/src/main/java/com/example/product/service/ProductService.java
+    +++ b/src/main/java/com/example/product/service/ProductService.java
+    @@ -20,7 +20,7 @@ public class ProductService {
+             public ProductResponse createProduct(ProductCreateRequest req, Long memberId) {
+                 Member seller = findMember(memberId);
+                 Category category = findCategory(req.getCategoryId());
+    -            Product product = Product.builder().title(req.getTitle()).description(req.getDescription()).price(req.getPrice()).status("SALE").category(category).seller(seller).build();
+    +            Product product = Product.builder().title(req.getTitle()).description(req.getDescription()).price(req.getPrice()).status("SALE").category(category).seller(seller).images(new ArrayList<>()).build();
+                 productRepository.save(product);
+                 return ProductResponse.from(product);
+             }
+  pr_title: "feat: initialize images list in product creation"
+  pr_author: "fryzke"
+  repo: "Team-5th-Chat-prj/Team-5th"
+  persona: "cynic"
+expected:
+  must_contain:
+    - "하드코딩"
+    - "enum"
+    - "가독성"
+    - "SALE"
+  severity: "info"
+source:
+  type: "synthetic"

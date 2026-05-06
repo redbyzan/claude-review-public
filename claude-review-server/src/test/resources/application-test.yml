@@ -1,0 +1,40 @@
+server:
+  port: 0
+
+spring:
+  ai:
+    anthropic:
+      api-key: test-key
+      base-url: https://api.test.local
+      chat:
+        options:
+          model: test-model
+          max-tokens: 100
+    retry:
+      max-attempts: 0
+
+review:
+  secret: test-secret-123
+  allowed-owners: test-owner,your-username
+  log-dir: /tmp/review-logs-test
+  server-url: https://test.local
+  changelog:
+    show-notice: true
+  conversation:
+    enabled: true
+    mention-trigger: "@sparta"
+    max-history-turns: 5
+
+cli-proxy:
+  url: ""
+  provider: gemini
+
+slack:
+  bot-token: ""
+  admin-user-id: ""
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

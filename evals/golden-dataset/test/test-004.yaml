@@ -1,0 +1,42 @@
+id: "test-004"
+category: "test"
+input:
+  diff: |
+    diff --git a/src/main/java/com/example/ticket/domain/booking/init/BulkDataInit.java b/src/main/java/com/example/ticket/domain/booking/init/BulkDataInit.java
+    new file mode 100644
+    --- /dev/null
+    +++ b/src/main/java/com/example/ticket/domain/booking/init/BulkDataInit.java
+    @@ -0,0 +1,25 @@
+    +@Slf4j
+    +@Component
+    +@Profile("dev")
+    +public class BulkDataInit implements CommandLineRunner {
+    +
+    +    private final JdbcTemplate jdbcTemplate;
+    +
+    +    @Override
+    +    @Order(2)
+    +    public void run(String... args) {
+    +        System.out.println("=== Bulk data initialization start ===");
+    +        long start = System.currentTimeMillis();
+    +
+    +        jdbcTemplate.batchUpdate("INSERT INTO events (name, venue, event_date) VALUES (?, ?, ?)",
+    +            batchList);
+    +
+    +        long elapsed = System.currentTimeMillis() - start;
+    +        System.out.println("=== Bulk data initialization complete: " + elapsed + "ms ===");
+    +    }
+    +}
+  pr_title: "feat: add bulk data initialization for dev environment"
+  pr_author: "dev-user"
+  repo: "6team-Plus-project-sparta/Ticket_JAVARA"
+  persona: "cynic"
+expected:
+  must_contain:
+    - "System.out"
+    - "SLF4J"
+    - "log.info"
+    - "로깅"
+  severity: "warning"
+source:
+  type: "synthetic"

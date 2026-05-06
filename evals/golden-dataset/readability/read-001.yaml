@@ -1,0 +1,30 @@
+id: "read-001"
+category: "readability"
+input:
+  diff: |
+    diff --git a/src/main/java/com/example/auth/controller/AuthController.java b/src/main/java/com/example/auth/controller/AuthController.java
+    index c13ddfaf..a45e929d 100644
+    --- a/src/main/java/com/example/auth/controller/AuthController.java
+    +++ b/src/main/java/com/example/auth/controller/AuthController.java
+    @@ -5,6 +5,15 @@
+     public ResponseEntity<UserDto> registerClient(@RequestBody ClientRegisterRequestDto req) {
+    -        User saveduser = userRepository.save(User.builder()
+    +        User savedclient = userRepository.save(User.builder()
+             .email(req.getEmail())
+             .password(passwordEncoder.encode(req.getPassword()))
+             .role(Role.CLIENT)
+    -        ClientRegisterResponseDto response = new ClientRegisterResponseDto(saveduser, clientId, title);
+    +        ClientRegisterResponseDto response = new ClientRegisterResponseDto(savedclient, clientId, title);
+  pr_title: "fix: variable naming in client registration"
+  pr_author: "dev-user"
+  repo: "Ready-s7/Readys7-project"
+  persona: "cynic"
+expected:
+  must_contain:
+    - "카멜"
+    - "네이밍"
+    - "savedclient"
+    - "savedClient"
+  severity: "info"
+source:
+  type: "synthetic"

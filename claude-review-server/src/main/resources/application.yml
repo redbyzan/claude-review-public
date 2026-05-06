@@ -1,0 +1,70 @@
+server:
+  port: 8080
+
+spring:
+  ai:
+    anthropic:
+      api-key: ${ANTHROPIC_API_KEY}
+      base-url: ${ANTHROPIC_BASE_URL:https://api.anthropic.com}
+      chat:
+        options:
+          model: ${AI_MODEL:claude-sonnet-4-20250514}
+          max-tokens: 2000
+    retry:
+      max-attempts: 1
+      on-http-codes: 429
+
+review:
+  secret: ${REVIEW_SECRET:}
+  log-dir: ${REVIEW_LOG_DIR:/app/review-logs}
+  server-url: ${REVIEW_SERVER_URL:https://review.example.com}
+  server-role: ${REVIEW_SERVER_ROLE:active}
+  changelog:
+    show-notice: ${REVIEW_SHOW_CHANGELOG:false}
+  rebuttal:
+    enabled: ${REVIEW_REBUTTAL_ENABLED:false}
+    model: ${REVIEW_REBUTTAL_MODEL:claude-haiku-4-5-20251001}
+  conversation:
+    enabled: ${REVIEW_CONVERSATION_ENABLED:true}
+    mention-trigger: ${REVIEW_MENTION_TRIGGER:@sparta}
+    max-history-turns: ${REVIEW_MAX_HISTORY_TURNS:10}
+  cta:
+    enabled: ${REVIEW_CTA_ENABLED:true}
+
+github:
+  pat: ${GITHUB_PAT:}
+  api-base-url: ${GITHUB_API_BASE_URL:https://api.github.com}
+  allowed-repos: ${GITHUB_ALLOWED_REPOS:}
+
+cli-proxy:
+  url: ${CLI_PROXY_URL:}
+  provider: ${CLI_PROXY_PROVIDER:gemini}
+
+slack:
+  bot-token: ${SLACK_BOT_TOKEN:}
+  admin-user-id: ${SLACK_ADMIN_USER_ID:}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus, metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: claude-review-server
+
+deploy:
+  webhook-secret: ${DEPLOY_WEBHOOK_SECRET:}
+
+monitor:
+  alert:
+    cooldown-ms: ${MONITOR_ALERT_COOLDOWN_MS:300000}
+    check-interval-ms: ${MONITOR_CHECK_INTERVAL_MS:60000}
+    auth-blocked-threshold: ${MONITOR_AUTH_BLOCKED_THRESHOLD:10}
+    review-fail-threshold: ${MONITOR_REVIEW_FAIL_THRESHOLD:5}
+    rate-limit-threshold: ${MONITOR_RATE_LIMIT_THRESHOLD:20}

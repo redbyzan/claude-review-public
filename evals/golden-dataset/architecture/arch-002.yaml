@@ -1,0 +1,50 @@
+id: "arch-002"
+category: "architecture"
+input:
+  diff: |
+    diff --git a/src/main/java/com/example/auth/controller/AuthController.java b/src/main/java/com/example/auth/controller/AuthController.java
+    index c13ddfaf..a45e929d 100644
+    --- a/src/main/java/com/example/auth/controller/AuthController.java
+    +++ b/src/main/java/com/example/auth/controller/AuthController.java
+    @@ -10,6 +10,30 @@
+         public ResponseEntity<UserDto> registerClient(@RequestBody ClientRegisterRequestDto req) {
+    -        validateDuplicateEmail(req.getEmail());
+    +        // 회원가입 로직
+    +        if (userRepository.existsByEmail(req.getEmail())) {
+    +            throw new UserException(ErrorCode.EMAIL_DUPLICATE);
+    +        }
+    +        User user = User.builder().email(req.getEmail()).password(req.getPassword()).role(Role.CLIENT).build();
+    +        userRepository.save(user);
+    +        return ResponseEntity.ok(new UserDto(user));
+    +    }
+    +
+    +    public ResponseEntity<UserDto> registerDeveloper(@RequestBody DeveloperRegisterRequestDto req) {
+    +        if (userRepository.existsByEmail(req.getEmail())) {
+    +            throw new UserException(ErrorCode.EMAIL_DUPLICATE);
+    +        }
+    +        User user = User.builder().email(req.getEmail()).password(req.getPassword()).role(Role.DEVELOPER).build();
+    +        userRepository.save(user);
+    +        return ResponseEntity.ok(new UserDto(user));
+    +    }
+    +
+    +    public ResponseEntity<UserDto> registerAdmin(@RequestBody AdminRegisterRequestDto req) {
+    +        if (userRepository.existsByEmail(req.getEmail())) {
+    +            throw new UserException(ErrorCode.EMAIL_DUPLICATE);
+    +        }
+    +        User user = User.builder().email(req.getEmail()).password(req.getPassword()).role(Role.ADMIN).build();
+    +        userRepository.save(user);
+    +        return ResponseEntity.ok(new UserDto(user));
+    +    }
+  pr_title: "feat: add register endpoints for client, developer, admin"
+  pr_author: "dev-user"
+  repo: "Ready-s7/Readys7-project"
+  persona: "cynic"
+expected:
+  must_contain:
+    - "중복"
+    - "검증"
+    - "분리"
+    - "메서드"
+  severity: "warning"
+source:
+  type: "synthetic"

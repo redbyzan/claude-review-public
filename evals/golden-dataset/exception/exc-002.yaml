@@ -1,0 +1,29 @@
+id: "exc-002"
+category: "exception"
+input:
+  diff: |
+    diff --git a/.github/workflows/ai-review.yml b/.github/workflows/ai-review.yml
+    --- a/.github/workflows/ai-review.yml
+    +++ b/.github/workflows/ai-review.yml
+    @@ -20,6 +20,12 @@
+    +        HTTP_BODY=$(echo "$HTTP_RESPONSE" | head -n -1)
+    +        HTTP_CODE=$(echo "$HTTP_RESPONSE" | tail -n 1)
+    +
+    +        if [ "$HTTP_CODE" != "200" ]; then
+    +          echo "::warning::리뷰 서버 오류 (HTTP $HTTP_CODE)"
+    +          echo "text=warning: 리뷰 서버 응답 오류 (HTTP ${HTTP_CODE})" >> "$GITHUB_OUTPUT"
+    +        else
+    +          REVIEW_TEXT=$(echo "$HTTP_BODY" | jq -r '.review // "리뷰 내용을 가져올 수 없습니다."')
+  pr_title: "fix: add error handling for review server response"
+  pr_author: "dev-user"
+  repo: "your-username/web-content-curator"
+  persona: "mentor"
+expected:
+  must_contain:
+    - "curl"
+    - "빈"
+    - "HTTP_CODE"
+    - "실패"
+  severity: "warning"
+source:
+  type: "synthetic"

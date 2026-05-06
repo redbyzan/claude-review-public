@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>워크플로우 설치 가이드 — AI Code Review</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css?v=20260418a}">
+</head>
+<body>
+
+<section class="release-header">
+    <a class="release-back" th:href="@{/}">&larr; 메인으로</a>
+    <h1 class="release-title">워크플로우 설치/업데이트 가이드</h1>
+    <p class="release-subtitle">AI 코드리뷰를 팀 저장소에 적용하는 방법</p>
+</section>
+
+<section class="incident">
+
+    <!-- Quick Install -->
+    <div class="incident-card">
+        <h2 class="incident-heading">빠른 설치 (3단계)</h2>
+
+        <div class="incident-log">
+            <div class="incident-log-item">
+                <span class="incident-log-time">1</span>
+                <div class="incident-log-body">
+                    <strong>YAML 파일 다운로드</strong>
+                    <p class="guide-step-desc">아래 버튼을 클릭하여 최신 워크플로우 파일을 다운로드하세요.</p>
+                    <p th:replace="~{fragments/download :: btn('ai-review.yml 다운로드')}"></p>
+                </div>
+            </div>
+            <div class="incident-log-item">
+                <span class="incident-log-time">2</span>
+                <div class="incident-log-body">
+                    <strong>저장소에 파일 추가</strong>
+                    <p>다운로드한 파일을 팀 저장소의 아래 경로에 추가하세요:</p>
+                    <pre class="incident-code">your-repo/
+  .github/
+    workflows/
+      ai-review.yml    ← 이 위치에 파일 추가</pre>
+                </div>
+            </div>
+            <div class="incident-log-item">
+                <span class="incident-log-time">3</span>
+                <div class="incident-log-body">
+                    <strong>GitHub Secrets 등록</strong>
+                    <p>저장소 Settings → Secrets and variables → Actions → New repository secret:</p>
+                    <table class="incident-table guide-table-spacing">
+                        <thead><tr><th>Secret 이름</th><th>값</th><th>설명</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td><code>REVIEW_SERVER_URL</code></td>
+                                <td><code th:text="'https://' + ${domain}">https://review.example.com</code></td>
+                                <td>리뷰 서버 주소</td>
+                            </tr>
+                            <tr>
+                                <td><code>REVIEW_SECRET</code></td>
+                                <td>제공받은 시크릿 키</td>
+                                <td>인증용 공유 키</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update -->
+    <div class="incident-card">
+        <h2 class="incident-heading">업데이트 방법</h2>
+        <p>새 기능이 추가되면 이 페이지에서 최신 YAML을 다시 다운로드하여 기존 파일을 덮어쓰세요.</p>
+        <div class="incident-log">
+            <div class="incident-log-item incident-log-item--success">
+                <div class="incident-log-body">
+                    <strong>업데이트 절차</strong>
+                    <pre class="incident-code">1. 이 페이지에서 최신 ai-review.yml 다운로드
+2. 저장소의 .github/workflows/ai-review.yml 을 새 파일로 교체
+3. 커밋 &amp; 푸시
+4. 다음 PR부터 새 기능이 자동 적용</pre>
+                </div>
+            </div>
+        </div>
+        <p class="guide-note">
+            Secrets(<code>REVIEW_SERVER_URL</code>, <code>REVIEW_SECRET</code>)은 변경할 필요가 없습니다.
+        </p>
+    </div>
+
+    <!-- What it does -->
+    <div class="incident-card">
+        <h2 class="incident-heading">이 워크플로우가 하는 일</h2>
+        <table class="incident-table">
+            <thead><tr><th>기능</th><th>동작</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>PR 자동 리뷰</td>
+                    <td>PR을 열거나 업데이트하면 AI가 코드를 분석하여 코멘트를 등록합니다</td>
+                </tr>
+                <tr>
+                    <td>이전 피드백 검증</td>
+                    <td>PR 업데이트 시 이전 리뷰에서 지적한 사항의 반영 여부를 확인합니다</td>
+                </tr>
+                <tr>
+                    <td>대화형 Q&A</td>
+                    <td>PR 코멘트에 <code>@sparta 질문내용</code>을 적으면 AI가 답변합니다</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Troubleshooting -->
+    <div class="incident-card">
+        <h2 class="incident-heading">문제 해결</h2>
+        <table class="incident-table">
+            <thead><tr><th>증상</th><th>확인 사항</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>PR에 리뷰가 안 달림</td>
+                    <td>
+                        1. <code>.github/workflows/ai-review.yml</code> 파일이 있는지 확인<br>
+                        2. GitHub Actions 탭에서 워크플로우 실행 로그 확인<br>
+                        3. <code>REVIEW_SERVER_URL</code>, <code>REVIEW_SECRET</code> Secrets가 등록되어 있는지 확인
+                    </td>
+                </tr>
+                <tr>
+                    <td>@sparta 멘션이 안 먹힘</td>
+                    <td>
+                        일반 코멘트(리뷰 코멘트 아님)에 <code>@sparta</code>를 적었는지 확인하세요.<br>
+                        리뷰 코멘트(review comment)에도 동작합니다.
+                    </td>
+                </tr>
+                <tr>
+                    <td>diff가 너무 작다고 스킵됨</td>
+                    <td>
+                        변경사항이 100바이트 미만이면 자동 스킵됩니다.<br>
+                        의미 있는 변경을 PR에 포함하세요.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</section>
+
+<footer class="footer">
+    <p>Spring Boot 3.5 + Spring AI 1.0 + Java 21</p>
+</footer>
+
+</body>
+</html>

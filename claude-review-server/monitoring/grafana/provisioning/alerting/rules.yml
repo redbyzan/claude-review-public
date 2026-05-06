@@ -1,0 +1,175 @@
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: claude-review-alerts
+    folder: Alerts
+    interval: 1m
+    rules:
+      - uid: alert-service-down
+        title: "P0: Service Down"
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: up{job="claude-review-server"}
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - A
+                  reducer:
+                    type: last
+                  type: query
+              type: classic_conditions
+              refId: C
+        noDataState: Alerting
+        execErrState: Alerting
+        for: 1m
+        annotations:
+          summary: "Review service is DOWN"
+          description: "Prometheus cannot scrape claude-review-server. Target is unreachable."
+        labels:
+          severity: critical
+        notificationSettings:
+          receiver: Discord
+
+      - uid: alert-rate-limit
+        title: "P1: Rate Limit Spike"
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: increase(rate_limit_blocked_total{application="claude-review-server"}[5m])
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 5
+                    type: "gt"
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - A
+                  reducer:
+                    type: last
+                  type: query
+              type: classic_conditions
+              refId: C
+        noDataState: OK
+        execErrState: OK
+        for: 3m
+        annotations:
+          summary: "Rate limit blocks detected"
+          description: "Rate limit blocks exceeded threshold. Possible abuse or misconfigured client."
+        labels:
+          severity: warning
+        notificationSettings:
+          receiver: Discord
+
+      - uid: alert-review-fallback
+        title: "P1: Review Fallback Triggered"
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: increase(review_fallback_total{application="claude-review-server"}[5m])
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 3
+                    type: "gt"
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - A
+                  reducer:
+                    type: last
+                  type: query
+              type: classic_conditions
+              refId: C
+        noDataState: OK
+        execErrState: OK
+        for: 3m
+        annotations:
+          summary: "AI fallback triggered repeatedly"
+          description: "Primary AI model failed and fallback activated 3+ times in 5 minutes. Check Claude API status."
+        labels:
+          severity: warning
+        notificationSettings:
+          receiver: Discord
+
+      - uid: alert-error-rate
+        title: "P2: High Error Rate"
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: rate(logback_events_total{application="claude-review-server", level="error"}[5m])
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 0.1
+                    type: "gt"
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - A
+                  reducer:
+                    type: last
+                  type: query
+              type: classic_conditions
+              refId: C
+        noDataState: OK
+        execErrState: OK
+        for: 5m
+        annotations:
+          summary: "Error rate above threshold"
+          description: "Application error log rate exceeds 0.1/sec for 5 minutes."
+        labels:
+          severity: info
+        notificationSettings:
+          receiver: Discord

@@ -1,0 +1,28 @@
+id: "spring-001"
+category: "spring"
+input:
+  diff: |
+    diff --git a/src/main/java/com/example/ticket_javara/domain/booking/repository/EventRepository.java b/src/main/java/com/example/ticket_javara/domain/booking/repository/EventRepository.java
+    index 1234567..89abcde 100644
+    --- a/src/main/java/com/example/ticket_javara/domain/booking/repository/EventRepository.java
+    +++ b/src/main/java/com/example/ticket_javara/domain/booking/repository/EventRepository.java
+    @@ -5,5 +5,5 @@ import org.springframework.cache.annotation.Cacheable;
+     public interface EventRepository extends JpaRepository<Event, Long> {
+    -    @Cacheable(value = "event-detail", key = "#eventId")
+    -    Optional<Event> findById(Long eventId); //findCachedById;
+    +    @Cacheable(value = "event-detail", key = "#eventId")
+    +    Optional<Event> findById(Long eventId);
+     }
+  pr_title: "fix: restore @Cacheable on EventRepository"
+  pr_author: "dev-user"
+  repo: "6team-Plus-project-sparta/Ticket_JAVARA"
+  persona: "cynic"
+expected:
+  must_contain:
+    - "Cacheable"
+    - "findById"
+    - "캐시"
+    - "커스텀"
+  severity: "warning"
+source:
+  type: "real"

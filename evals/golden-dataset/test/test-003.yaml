@@ -1,0 +1,45 @@
+id: "test-003"
+category: "test"
+input:
+  diff: |
+    diff --git a/src/test/java/com/example/user/service/UserServiceTest.java b/src/test/java/com/example/user/service/UserServiceTest.java
+    new file mode 100644
+    --- /dev/null
+    +++ b/src/test/java/com/example/user/service/UserServiceTest.java
+    @@ -0,0 +1,25 @@
+    +@ExtendWith(MockitoExtension.class)
+    +class UserServiceTest {
+    +    @Mock
+    +    UserRepository userRepository;
+    +
+    +    @InjectMocks
+    +    UserService userService;
+    +
+    +    @Test
+    +    void findUser_success() {
+    +        // given
+    +        User user = new User("test@email.com", "password", Role.USER);
+    +        given(userRepository.findById(1L)).willReturn(Optional.of(user));
+    +
+    +        // when
+    +        UserResponse result = userService.findUser(1L);
+    +
+    +        // then
+    +        assertThat(result.getEmail()).isEqualTo("test@email.com");
+    +    }
+    +
+    +    // TODO: findUser_notFound, deleteUser_success, updateUser_success
+    +}
+  pr_title: "test: add UserService unit test"
+  pr_author: "dev-user"
+  repo: "example/sample-repo"
+  persona: "mentor"
+expected:
+  must_contain:
+    - "TODO"
+    - "커버리지"
+    - "예외"
+    - "테스트"
+  severity: "info"
+source:
+  type: "synthetic"

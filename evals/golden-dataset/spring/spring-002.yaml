@@ -1,0 +1,40 @@
+id: "spring-002"
+category: "spring"
+input:
+  diff: |
+    diff --git a/src/main/java/com/example/config/DotenvInitializer.java b/src/main/java/com/example/config/DotenvInitializer.java
+    new file mode 100644
+    --- /dev/null
+    +++ b/src/main/java/com/example/config/DotenvInitializer.java
+    @@ -0,0 +1,20 @@
+    +package com.example.config;
+    +
+    +import io.github.cdimascio.dotenv.Dotenv;
+    +import org.springframework.context.ApplicationContextInitializer;
+    +import org.springframework.core.env.ConfigurableEnvironment;
+    +import org.springframework.core.env.MapPropertySource;
+    +
+    +public class DotenvInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+    +    @Override
+    +    public void initialize(ConfigurableApplicationContext context) {
+    +        try {
+    +            Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
+    +            // ... environment variable registration
+    +        } catch (Exception e) {
+    +            System.out.println("Dotenv load failed: " + e.getMessage());
+    +        }
+    +    }
+    +}
+  pr_title: "feat: add DotenvInitializer for environment variables"
+  pr_author: "dev-user"
+  repo: "6team-Plus-project-sparta/Ticket_JAVARA"
+  persona: "cynic"
+expected:
+  must_contain:
+    - "SLF4J"
+    - "Logger"
+    - "System.out"
+    - "로그"
+  severity: "warning"
+source:
+  type: "real"

@@ -1,0 +1,34 @@
+id: "perf-003"
+category: "performance"
+input:
+  diff: |
+    diff --git a/src/main/java/com/review/server/controller/HomeController.java b/src/main/java/com/review/server/controller/HomeController.java
+    index ef34315..a8671bf 100644
+    --- a/src/main/java/com/review/server/controller/HomeController.java
+    +++ b/src/main/java/com/review/server/controller/HomeController.java
+    @@ -55,7 +55,15 @@ public class HomeController {
+             }
+             model.addAttribute("entry", entry);
+             model.addAttribute("domain", "review.example.com");
+    -        return "release-detail";
+    +
+    +        String customTemplate = "release-" + slug;
+    +        try {
+    +            getClass().getClassLoader().getResource("templates/" + customTemplate + ".html");
+    +            return customTemplate;
+    +        } catch (Exception e) {
+    +            return "release-detail";
+    +        }
+  pr_title: "feat: dynamic template resolution by slug"
+  pr_author: "your-username"
+  repo: "your-username/claude-review"
+  persona: "mentor"
+expected:
+  must_contain:
+    - "캐시"
+    - "클래스패스"
+    - "매 요청"
+    - "I/O"
+  severity: "warning"
+source:
+  type: "real"

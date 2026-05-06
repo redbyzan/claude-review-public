@@ -1,0 +1,35 @@
+id: "sec-003"
+category: "security"
+input:
+  diff: |
+    diff --git a/.github/workflows/deploy.yml b/.github/workflows/deploy.yml
+    new file mode 100644
+    --- /dev/null
+    +++ b/.github/workflows/deploy.yml
+    @@ -0,0 +1,25 @@
+    +    - name: Deploy to Server
+    +      uses: appleboy/ssh-action@v1
+    +      with:
+    +        host: ${{ secrets.SSH_HOST }}
+    +        port: ${{ secrets.SSH_PORT }}
+    +        username: ${{ secrets.SSH_USERNAME }}
+    +        password: ${{ secrets.SSH_PASSWORD }}
+    +        script: |
+    +          cd /home/team1
+    +          docker-compose -f docker-compose.prod.yml pull
+    +          docker-compose -f docker-compose.prod.yml down
+    +          docker-compose -f docker-compose.prod.yml up -d
+    +          docker ps
+  pr_title: "ci: add CD pipeline with SSH deploy"
+  pr_author: "dev-user"
+  repo: "Agricultural-E-commerce-Platform/Agricultural-E-commerce-Platform"
+  persona: "cynic"
+expected:
+  must_contain:
+    - "SSH"
+    - "비밀번호"
+    - "키"
+    - "보안"
+  severity: "warning"
+source:
+  type: "real"

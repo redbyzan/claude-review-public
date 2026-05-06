@@ -1,0 +1,29 @@
+id: "read-003"
+category: "readability"
+input:
+  diff: |
+    diff --git a/src/main/java/com/example/product/dto/response/DeveloperRegisterResponseDto.java b/src/main/java/com/example/product/dto/response/DeveloperRegisterResponseDto.java
+    new file mode 100644
+    --- /dev/null
+    +++ b/src/main/java/com/example/product/dto/response/DeveloperRegisterResponseDto.java
+    @@ -0,0 +1,10 @@
+    +package com.example.readys7project.domain.user.auth.dto.response;
+    +
+    +public record DeveloperRegisterResponseDto(
+    +    UserDto user,
+    +        Long developerId,
+    +        String title
+    +) {}
+  pr_title: "feat: add DeveloperRegisterResponseDto"
+  pr_author: "dev-user"
+  repo: "Ready-s7/Readys7-project"
+  persona: "mentor"
+expected:
+  must_contain:
+    - "들여쓰기"
+    - "포맷"
+    - "DTO"
+    - "일관성"
+  severity: "info"
+source:
+  type: "synthetic"

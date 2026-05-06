@@ -1,0 +1,10 @@
+.env
+.env.standby
+*.pem
+nginx/ssl/*.pem
+build/
+.gradle/
+*.class
+.idea/
+*.iml
+cloudflared/credentials.json

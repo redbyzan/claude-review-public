@@ -1,0 +1,30 @@
+id: "exc-001"
+category: "exception"
+input:
+  diff: |
+    diff --git a/src/main/java/com/review/server/controller/HomeController.java b/src/main/java/com/review/server/controller/HomeController.java
+    index ef34315..a8671bf 100644
+    --- a/src/main/java/com/review/server/controller/HomeController.java
+    +++ b/src/main/java/com/review/server/controller/HomeController.java
+    @@ -58,4 +58,12 @@ public class HomeController {
+    -        return "release-detail";
+    +        String customTemplate = "release-" + slug;
+    +        try {
+    +            getClass().getClassLoader().getResource("templates/" + customTemplate + ".html");
+    +            return customTemplate;
+    +        } catch (Exception e) {
+    +            return "release-detail";
+    +        }
+  pr_title: "feat: dynamic template resolution by slug"
+  pr_author: "your-username"
+  repo: "your-username/claude-review"
+  persona: "mentor"
+expected:
+  must_contain:
+    - "getClassLoader"
+    - "getResource"
+    - "null"
+    - "예외"
+  severity: "warning"
+source:
+  type: "real"

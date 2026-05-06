@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>과제 요구사항 기반 리뷰 — AI Code Review</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css?v=20260416a}">
+</head>
+<body>
+
+<section class="release-header">
+    <a class="release-back" th:href="@{/release}">&larr; 릴리즈 노트</a>
+    <h1 class="release-title">과제 요구사항 기반 리뷰</h1>
+    <p class="release-subtitle">
+        <span th:text="${entry.date}"></span>
+        <span class="changelog-tag" style="margin-left:8px; vertical-align:middle;"
+              th:classappend="' changelog-tag--' + ${entry.category}"
+              th:text="${entry.category == 'feature'} ? '기능' : (${entry.category == 'improvement'} ? '개선' : '수정')"></span>
+    </p>
+</section>
+
+<section class="incident">
+
+    <!-- Overview -->
+    <div class="incident-card">
+        <h2 class="incident-heading">무엇이 바뀌었나요</h2>
+        <p>AI가 여러분의 PR을 리뷰할 때 <strong>과제 요구사항을 1차 기준</strong>으로 삼아 리뷰합니다.<br>
+        과제에서 요구하는 기술(Lettuce, QueryDSL, Caffeine 등)을 올바르게 사용했는지,<br>
+        과제에서 금지하는 기술(Redisson 등)을 사용하지 않았는지 먼저 확인합니다.</p>
+    </div>
+
+    <!-- Before -->
+    <div class="incident-card">
+        <div class="incident-phase-header">
+            <span class="incident-phase-num" style="background:#ef4444;">B</span>
+            <div>
+                <h2 class="incident-heading">변경 전 — 과제 요구사항을 몰랐던 AI</h2>
+            </div>
+        </div>
+
+        <div class="incident-log">
+            <div class="incident-log-item">
+                <div class="incident-log-body">
+                    <strong>수강생이 Lettuce 기반 Lock을 구현했습니다</strong>
+                    <pre class="incident-code">// 과제 요구사항: Lettuce로 Redis Lock 구현 (Redisson 금지)
+public boolean tryLock(String key, String value, long ttl) {
+    return redisTemplate.opsForValue()
+        .setIfAbsent(key, value, Duration.ofMillis(ttl));
+}</pre>
+                </div>
+            </div>
+            <div class="incident-log-item incident-log-item--fail">
+                <div class="incident-log-body">
+                    <strong>기존 AI 리뷰 — 과제와 충돌하는 권고</strong>
+                    <pre class="incident-code">### 🟡 개선 제안
+
+**Redisson 도입을 권장합니다**
+현재 Lettuce 기반 Lock은 재시도 로직이 없어 일시적인 경합 상황에서
+정상적인 요청마저 차단됩니다. Redisson의 tryLock(waitTime, leaseTime)을
+사용하면 더 안정적인 Lock 관리가 가능합니다.</pre>
+                    <p style="color:#ef4444; margin-top:12px;">
+                        &rarr; 과제에서 <strong>Lettuce 사용 필수, Redisson 사용 금지</strong>라고 명시되어 있음<br>
+                        &rarr; AI가 과제 요구사항을 몰라서 <strong>과제와 반대되는 권고</strong>를 함
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- After -->
+    <div class="incident-card">
+        <div class="incident-phase-header">
+            <span class="incident-phase-num" style="background:#22c55e;">A</span>
+            <div>
+                <h2 class="incident-heading">변경 후 — 과제 요구사항을 아는 AI</h2>
+            </div>
+        </div>
+
+        <div class="incident-log">
+            <div class="incident-log-item">
+                <div class="incident-log-body">
+                    <strong>동일한 코드에 대해 과제 관점에서 리뷰</strong>
+                    <pre class="incident-code">### 📋 과제 요구사항 준수 여부
+
+**Lettuce 기반 Redis Lock** — 준수 ✅
+- SETNX + TTL 패턴으로 Lock 획득 및 자동 만료 구현 확인
+- 과제에서 Redisson 사용 금지이므로 Lettuce 선택은 올바릅니다
+
+**개선 권장:**
+- Lock 해제 시 UUID 검증 + Lua Script로 원자적 해제가 필요합니다
+- 현재 `delete()`만 사용 중인데, 다른 스레드의 Lock을 해제할 위험이 있습니다</pre>
+                </div>
+            </div>
+            <div class="incident-log-item incident-log-item--success">
+                <div class="incident-log-body">
+                    <strong>Redisson을 사용한 경우 — 자동 지적</strong>
+                    <p>과제에서 금지하는 기술을 사용하면 🔴 필수 수정으로 즉시 지적합니다.</p>
+                    <pre class="incident-code">### 📋 과제 요구사항 준수 여부
+
+**🚨 Redisson 사용 감지 — 과제 요구사항 위반**
+과제에서는 Lettuce 기반 Lock을 요구하며, Redisson 사용을 금지합니다.
+필수 기능에서는 Lettuce + SETNX + TTL + UUID + Lua Script로
+다시 구현해야 합니다.</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- What AI checks -->
+    <div class="incident-card">
+        <h2 class="incident-heading">AI가 확인하는 과제 요구사항</h2>
+        <table class="incident-table">
+            <thead><tr><th>구분</th><th>항목</th><th>확인 내용</th></tr></thead>
+            <tbody>
+                <tr><td rowspan="3">필수</td><td>동시성 제어</td><td>Lettuce Lock, SETNX + TTL, UUID + Lua Script, 동시성 테스트 코드</td></tr>
+                <tr><td>캐싱</td><td>Caffeine @Cacheable, TTL/maximumSize, v1/v2 API 공존</td></tr>
+                <tr><td>검색</td><td>QueryDSL BooleanExpression, Paging, Redis ZSet 인기검색어</td></tr>
+                <tr><td rowspan="4">도전</td><td>동시성 고도화</td><td>AOP Lock, @Version 낙관적 락, 비관적 락 (코드 감지 시)</td></tr>
+                <tr><td>캐싱 고도화</td><td>Redis Remote Cache, 5만건+ 더미, K6 성능테스트 (코드 감지 시)</td></tr>
+                <tr><td>인덱스</td><td>EXPLAIN, 복합 인덱스, Before/After 비교 (코드 감지 시)</td></tr>
+                <tr><td>채팅</td><td>WebSocket + STOMP, Redis Pub/Sub (코드 감지 시)</td></tr>
+            </tbody>
+        </table>
+        <p style="margin-top:16px; color:#94a3b8;">도전 기능은 PR에 관련 코드가 포함된 경우에만 리뷰합니다. 아직 구현하지 않았다면 언급하지 않습니다.</p>
+    </div>
+
+    <!-- How it works -->
+    <div class="incident-card">
+        <h2 class="incident-heading">어떻게 동작하나요</h2>
+        <table class="incident-table">
+            <tr><th>대상 과제</th><td>CH5 플러스 프로젝트 (커머스 플랫폼)</td></tr>
+            <tr><th>요구사항 소스</th><td>과제 요구사항 문서를 AI가 검증 가능한 체크리스트로 변환하여 주입</td></tr>
+            <tr><th>리뷰 순서</th><td>1차: 과제 요구사항 준수 &rarr; 2차: 일반 코드 품질</td></tr>
+            <tr><th>추가 설정</th><td>없음 — 기존 YAML 그대로 사용 가능</td></tr>
+            <tr><th>과제 변경 시</th><td>서버에서 요구사항 파일만 업데이트. 팀의 추가 조치 불필요</td></tr>
+        </table>
+    </div>
+
+</section>
+
+<footer class="footer">
+    <p>Spring Boot 3.5 + Spring AI 1.0 + Java 21</p>
+</footer>
+
+</body>
+</html>

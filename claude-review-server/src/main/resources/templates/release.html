@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Release Notes — AI Code Review</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css?v=20260416a}">
+</head>
+<body>
+
+<section class="release-header">
+    <a class="release-back" th:href="@{/}">&larr; 메인으로</a>
+    <h1 class="release-title">Release Notes</h1>
+    <p class="release-subtitle">AI 코드리뷰 서비스 변경 이력</p>
+    <div class="release-download">
+        <a th:replace="~{fragments/download :: btn('ai-review.yml 최신 버전 다운로드')}"></a>
+    </div>
+</section>
+
+<section class="section">
+    <div class="changelog-timeline" th:if="${!changelog.isEmpty()}">
+        <div class="changelog-item" th:each="entry : ${changelog}" th:attr="id=${entry.anchor()}">
+            <div class="changelog-dot"></div>
+            <div class="changelog-content">
+                <div class="changelog-meta">
+                    <span class="changelog-date" th:text="${entry.date}"></span>
+                    <span class="changelog-tag" th:classappend="' changelog-tag--' + ${entry.category}"
+                          th:text="${entry.category == 'feature'} ? '기능' : (${entry.category == 'improvement'} ? '개선' : '수정')"></span>
+                    <span class="changelog-new" th:if="${entry.isNew()}">N</span>
+                </div>
+                <h3 class="changelog-title" th:if="${entry.detail != null && !entry.detail.isBlank()}">
+                    <a th:href="@{/release/{slug}(slug=${entry.slug})}" th:text="${entry.title}"></a>
+                </h3>
+                <h3 class="changelog-title" th:if="${entry.detail == null || entry.detail.isBlank()}" th:text="${entry.title}"></h3>
+                <p class="changelog-desc" th:if="${entry.description}" th:text="${entry.description}"></p>
+                <a class="changelog-action" th:if="${entry.detail != null && !entry.detail.isBlank()}" th:href="@{/release/{slug}(slug=${entry.slug})}">상세보기 &rarr;</a>
+                <a class="changelog-action" th:if="${entry.action}" th:href="${entry.actionUrl} ?: @{/ai-review.yml}" th:text="${entry.action}"></a>
+                <a class="changelog-anchor" th:href="'#'+${entry.anchor()}">#</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer class="footer">
+    <p>Spring Boot 3.5 + Spring AI 1.0 + Java 21</p>
+</footer>
+
+</body>
+</html>

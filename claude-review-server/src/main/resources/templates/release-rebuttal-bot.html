@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 리뷰 반박봇 — AI Code Review</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css?v=20260416c}">
+</head>
+<body>
+
+<section class="release-header">
+    <a class="release-back" th:href="@{/release}">&larr; 릴리즈 노트</a>
+    <h1 class="release-title">AI 리뷰 반박봇</h1>
+    <p class="release-subtitle">
+        <span th:text="${entry.date}"></span>
+        <span class="changelog-tag" style="margin-left:8px; vertical-align:middle;"
+              th:classappend="' changelog-tag--' + ${entry.category}"
+              th:text="${entry.category == 'feature'} ? '기능' : (${entry.category == 'improvement'} ? '개선' : '수정')"></span>
+    </p>
+</section>
+
+<section class="incident">
+
+    <!-- Overview -->
+    <div class="incident-card">
+        <h2 class="incident-heading">왜 반박봇이 필요한가?</h2>
+        <p>AI 코드리뷰는 강력하지만, 완벽하지 않습니다. 때로는 존재하지 않는 버그를 지적하거나, 맥락을 무시한 권고를 남기기도 합니다. 사용자가 AI 리뷰를 무비판적으로 수용하는 것을 방지하기 위해, 리뷰 서버가 스스로의 리뷰를 한 번 더 검증합니다.</p>
+        <p style="margin-top:12px;">반박봇은 <strong>"AI 리뷰도 틀릴 수 있다"</strong>는 사실을 체감적으로 전달하여, 최종 판단은 항상 사람이 내려야 한다는 태도를 자연스럽게 형성합니다.</p>
+    </div>
+
+    <!-- Scenario 1: Fact Error -->
+    <div class="incident-card">
+        <div class="incident-phase-header">
+            <span class="incident-phase-num">1</span>
+            <div>
+                <h2 class="incident-heading">시나리오 1: 사실 오류를 발견했을 때</h2>
+                <span class="incident-phase-time">가장 흔한 반박 사례 — AI가 없는 코드를 지적</span>
+            </div>
+        </div>
+
+        <div class="incident-log">
+            <div class="incident-log-item">
+                <div class="incident-log-body">
+                    <strong>AI 리뷰가 달렸습니다</strong>
+                    <p>PR을 열면 AI가 코드를 리뷰합니다. 아래 지적은 실제 diff에 없는 라인을 참조하고 있습니다.</p>
+                    <pre class="incident-code">## 🤖 AI 코드리뷰
+
+### 🔴 주의
+- `PaymentService.java` 87번째 줄에서 SQL 인젝션 위험이 있습니다.
+  문자열 연결로 쿼리를 생성하고 있습니다.</pre>
+                </div>
+            </div>
+            <div class="incident-log-item incident-log-item--success">
+                <div class="incident-log-body">
+                    <strong>반박봇이 자동으로 검증 코멘트를 등록합니다</strong>
+                    <p>반박봇이 diff를 기준으로 리뷰를 교차 검증합니다. 해당 라인에 문자열 연결이 없으면 반박을 생성합니다.</p>
+                    <pre class="incident-code">## ⚖️ @sparta AI 리뷰 반박
+
+### 반박 사항
+
+**87번째 줄 SQL 인젝션 지적이 부정확합니다.**
+
+실제 diff를 확인하면 87번째 줄은 `PreparedStatement`를 사용하는
+정수형 파라미터 바인딩 코드입니다. 문자열 연결은 존재하지 않습니다.
+
+AI 리뷰가 참조한 코드는 현재 PR에 포함되어 있지 않으므로,
+이 지적은 무시하셔도 됩니다.
+
+---
+> *AI 리뷰도 틀릴 수 있습니다. 위 반박 역시 참고용이며, 최종 판단은 직접 하세요.*</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scenario 2: Excessive Strictness -->
+    <div class="incident-card">
+        <div class="incident-phase-header">
+            <span class="incident-phase-num">2</span>
+            <div>
+                <h2 class="incident-heading">시나리오 2: 과도하게 엄격한 지적</h2>
+                <span class="incident-phase-time">교육 프로젝트에서 자주 발생하는 케이스</span>
+            </div>
+        </div>
+
+        <div class="incident-log">
+            <div class="incident-log-item">
+                <div class="incident-log-body">
+                    <strong>AI가 실무 수준의 엄격함으로 리뷰합니다</strong>
+                    <p>초보자 프로젝트에 대기업 수준의 보안 요구사항을 적용하는 경우입니다.</p>
+                    <pre class="incident-code">## 🤖 AI 코드리뷰
+
+### 🔴 주의
+- API 응답에 사용자 이메일이 노출됩니다. PII 데이터 마스킹이 필요합니다.
+- CORS 설정이 `*`로 되어 있습니다. 프로덕션에서는 도메인을 제한해야 합니다.
+- Rate Limiting이 적용되지 않았습니다.</pre>
+                </div>
+            </div>
+            <div class="incident-log-item incident-log-item--success">
+                <div class="incident-log-body">
+                    <strong>반박봇이 맥락을 고려한 반박을 달아줍니다</strong>
+                    <p>교육 프로젝트의 성격을 감안하여 과도한 지적을 완화합니다.</p>
+                    <pre class="incident-code">## ⚖️ @sparta AI 리뷰 반박
+
+### 반박 사항
+
+**PII 마스킹, CORS 제한, Rate Limiting 지적은 현재 프로젝트 단계에서
+과도합니다.**
+
+이 PR은 교육 프로젝트의 기능 구현 단계로 보입니다.
+실무 수준의 보안 요구사항은 배포 환경이 정해지고 사용자가 생긴 후
+단계적으로 적용하는 것이 효율적입니다.
+
+지금은 기능 동작에 집중하고, 배포 전 보안 점검 단계에서
+해당 사항들을 다루는 것을 권장합니다.</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scenario 3: No Rebuttal -->
+    <div class="incident-card">
+        <div class="incident-phase-header">
+            <span class="incident-phase-num">3</span>
+            <div>
+                <h2 class="incident-heading">시나리오 3: 리뷰가 정확할 때</h2>
+                <span class="incident-phase-time">반박 코멘트가 없는 것이 정상 동작</span>
+            </div>
+        </div>
+
+        <div class="incident-log">
+            <div class="incident-log-item">
+                <div class="incident-log-body">
+                    <strong>AI 리뷰가 정확하게 작성되었습니다</strong>
+                    <pre class="incident-code">## 🤖 AI 코드리뷰
+
+### 🟡 제안
+- `OrderService.java` 23번째 줄의 `@Transactional`에
+  `readOnly = true`를 추가하면 조회 성능이 개선됩니다.</pre>
+                </div>
+            </div>
+            <div class="incident-log-item">
+                <div class="incident-log-body">
+                    <strong>반박봇이 "반박할 근거가 없다"고 판단합니다</strong>
+                    <p>리뷰 내용이 정확하고 diff와 일치하면, 반박봇은 <strong>아무 코멘트도 남기지 않습니다</strong>. 반박 코멘트가 없다는 것은 리뷰가 검증을 통과했다는 의미입니다.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- How it works -->
+    <div class="incident-card">
+        <h2 class="incident-heading">작동 방식</h2>
+        <table class="incident-table">
+            <tr><th>동작 시점</th><td>AI 리뷰 코멘트가 등록된 직후, 자동으로 실행됩니다</td></tr>
+            <tr><th>검증 모델</th><td>Haiku (가볍고 빠른 검증용 모델로 비용을 최소화합니다)</td></tr>
+            <tr><th>검증 기준</th><td>① 사실 오류 ② 과도한 엄격함 ③ 맥락 누락 ④ 더 나쁜 제안</td></tr>
+            <tr><th>반박 없음</th><td>리뷰가 정확하면 <code>NO_REBUTTAL</code>을 반환하고 코멘트를 남기지 않습니다</td></tr>
+            <tr><th>장애 영향</th><td>반박봇 장애가 기존 리뷰에 영향을 주지 않습니다 (완전 분리된 엔드포인트)</td></tr>
+            <tr><th>기본 상태</th><td>비활성화. 환경변수 <code>REVIEW_REBUTTAL_ENABLED=true</code>로 활성화합니다</td></tr>
+        </table>
+    </div>
+
+    <!-- Architecture -->
+    <div class="incident-card">
+        <h2 class="incident-heading">아키텍처</h2>
+        <p style="margin-bottom:16px;">리뷰 생성과 반박 검증을 완전히 분리하여, 반박 기능이 기존 리뷰 응답 시간이나 안정성에 영향을 주지 않습니다.</p>
+        <pre class="incident-code">GitHub Actions (PR 열림/업데이트)
+  │
+  ├─ ① POST /review ──────→ 리뷰 생성 (Sonnet) ──→ 리뷰 코멘트 등록
+  │
+  └─ ② POST /review/rebuttal ──→ 리뷰 검증 (Haiku)
+                                      │
+                                      ├─ 반박 있음 → 반박 코멘트 등록
+                                      └─ 반박 없음 → 아무것도 안 함 (204)</pre>
+    </div>
+
+    <!-- What this teaches -->
+    <div class="incident-card">
+        <h2 class="incident-heading">이 기능이 전달하는 메시지</h2>
+        <div class="incident-lesson">
+            <h3>AI 리뷰는 참고용입니다</h3>
+            <p>반박봇이 존재한다는 것 자체가 "AI도 틀린다"는 증거입니다. 리뷰 내용을 맹신하지 말고, 직접 코드를 확인하고 판단하세요.</p>
+        </div>
+        <div class="incident-lesson">
+            <h3>반박 역시 AI가 작성합니다</h3>
+            <p>반박 코멘트도 AI가 생성하므로, 반박 자체가 항상 옳은 것은 아닙니다. 리뷰와 반박을 모두 읽고, 최종 판단은 직접 내리는 것이 중요합니다.</p>
+        </div>
+        <div class="incident-lesson">
+            <h3>비용 효율적 설계</h3>
+            <p>검증은 Haiku 모델(가벼운 모델)로 수행하여 추가 API 비용을 최소화합니다. 리뷰가 정확한 경우 최소 토큰만 소비하고 즉시 종료합니다.</p>
+        </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="incident-card" style="text-align:center; padding:40px 32px;">
+        <h2 class="incident-heading" style="margin-bottom:8px;">적용 방법</h2>
+        <p style="margin-bottom:24px;">최신 <code>ai-review.yml</code>을 다운로드하여 팀 레포의 <code>.github/workflows/</code> 에 덮어쓰세요.<br>반박 기능은 기본 비활성화 상태이므로, 먼저 안전하게 업데이트할 수 있습니다.</p>
+        <a th:replace="~{fragments/download :: btn('ai-review.yml 다운로드')}"></a>
+    </div>
+
+</section>
+
+<footer class="footer">
+    <p>Spring Boot 3.5 + Spring AI 1.0 + Java 21</p>
+</footer>
+
+</body>
+</html>

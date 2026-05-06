@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>개밥먹기 기록 — AI Code Review</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css?v=20260416b}">
+</head>
+<body>
+
+<section class="release-header">
+    <a class="release-back" th:href="@{/release}">&larr; 릴리즈 노트</a>
+    <h1 class="release-title">개밥먹기 기록</h1>
+    <p class="release-subtitle">리뷰 서버가 스스로를 리뷰하기까지의 과정</p>
+</section>
+
+<section class="incident">
+
+    <!-- 개요 -->
+    <div class="incident-card">
+        <h2 class="incident-heading">개밥먹기란?</h2>
+        <p><strong>Eating your own dog food</strong> — 자기가 만든 제품을 직접 사용하면서 문제점을 체감하고 개선하는 개발 문화입니다.</p>
+        <table class="incident-table">
+            <tr><th>적용 대상</th><td>리뷰 서버 저장소 (your-username/claude-review)</td></tr>
+            <tr><th>적용 방식</th><td>수강생과 동일한 ai-review.yml + GitHub Secrets</td></tr>
+            <tr><th>검증 항목</th><td>자동 리뷰, @sparta 대화, 업데이트 공지</td></tr>
+            <tr><th>날짜</th><td>2026-04-16</td></tr>
+        </table>
+    </div>
+
+    <!-- 배경 -->
+    <div class="incident-card">
+        <h2 class="incident-heading">도입 배경</h2>
+        <p>수강생들에게 AI 코드리뷰 서비스를 제공하면서, 정작 서비스 자체의 코드 품질은 AI 리뷰 없이 관리되고 있었습니다.</p>
+        <pre class="incident-code">수강생 PR → ai-review.yml → 리뷰 서버 → AI 리뷰 코멘트
+리뷰 서버 PR → (리뷰 없음) → 직접 머지</pre>
+        <p>수강생이 겪는 모든 UX를 개발자도 직접 겪어야 서비스 품질을 높일 수 있다고 판단했습니다.</p>
+    </div>
+
+    <!-- Phase 1 -->
+    <div class="incident-card">
+        <div class="incident-phase-header">
+            <span class="incident-phase-num">1</span>
+            <div>
+                <h2 class="incident-heading">개밥먹기 설정</h2>
+                <span class="incident-phase-time">GitHub Private Repository 등록 + Secrets 설정</span>
+            </div>
+        </div>
+
+        <div class="incident-log">
+            <div class="incident-log-item">
+                <span class="incident-log-time">1</span>
+                <div class="incident-log-body">
+                    <strong>Private Repository 생성</strong>
+                    <p><code>your-username/claude-review</code> 저장소를 Private으로 생성하고 전체 프로젝트 코드를 push했습니다.</p>
+                </div>
+            </div>
+            <div class="incident-log-item">
+                <span class="incident-log-time">2</span>
+                <div class="incident-log-body">
+                    <strong>GitHub Secrets 등록</strong>
+                    <pre class="incident-code">REVIEW_SERVER_URL = https://review.example.com
+REVIEW_SECRET     = (인증 키)</pre>
+                    <p>수강생들이 설정하는 것과 동일한 시크릿 값을 등록했습니다.</p>
+                </div>
+            </div>
+            <div class="incident-log-item">
+                <span class="incident-log-time">3</span>
+                <div class="incident-log-body">
+                    <strong>ai-review.yml 워크플로우 등록</strong>
+                    <p><code>.github/workflows/ai-review.yml</code>에 최신 버전(대화형 응답 포함)을 배치했습니다.</p>
+                    <pre class="incident-code">on:
+  pull_request: [opened, synchronize]
+  issue_comment: [created]
+  pull_request_review_comment: [created]</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Phase 2 -->
+    <div class="incident-card">
+        <div class="incident-phase-header">
+            <span class="incident-phase-num">2</span>
+            <div>
+                <h2 class="incident-heading">첫 번째 개밥먹기 — 기능 개선 PR</h2>
+                <span class="incident-phase-time">your-username/claude-review#2</span>
+            </div>
+        </div>
+
+        <div class="incident-log">
+            <div class="incident-log-item">
+                <div class="incident-log-body">
+                    <strong>PR 생성: 대화 기능에서 전체 리뷰 제거</strong>
+                    <p>기능 브랜치에서 <code>ConversationService</code>를 수정하고 PR을 열었습니다.</p>
+                </div>
+            </div>
+            <div class="incident-log-item incident-log-item--success">
+                <div class="incident-log-body">
+                    <strong>AI 코드리뷰 자동 생성</strong>
+                    <p>PR 생성 즉시 Actions가 트리거되어 AI 리뷰가 코멘트로 등록되었습니다.</p>
+                    <pre class="incident-code">## 🤖 AI 코드리뷰
+
+> **[업데이트 확인](...)** — 대화형 Q&A 강화
+
+### 🟡 개선 제안
+1. 하드코딩된 안내 메시지 분리
+2. Fallback 서비스 의존성 누락 검증</pre>
+                </div>
+            </div>
+            <div class="incident-log-item incident-log-item--fail">
+                <div class="incident-log-body">
+                    <strong>첫 번째 문제 발견: 업데이트 링크 새창 미작동</strong>
+                    <p>AI 리뷰의 업데이트 링크가 새창으로 열리지 않았습니다.</p>
+                    <p>원인: GitHub 마크다운에서 <code>&lt;a target="_blank"&gt;</code> 미지원</p>
+                    <p>해결: 마크다운 링크 <code>[text](url)</code>로 변경</p>
+                </div>
+            </div>
+            <div class="incident-log-item incident-log-item--fail">
+                <div class="incident-log-body">
+                    <strong>두 번째 문제 발견: @sparta 멘션 응답 실패</strong>
+                    <p>PR 코멘트로 <code>@sparta</code> 멘션 후 AI 답변이 오지 않았습니다.</p>
+                    <p>원인: <code>${{ github.event.comment.body }}</code>에 괄호가 포함되어 쉘 syntax error 발생</p>
+                    <p>해결: <code>env:</code> 블록으로 안전하게 변수 전달</p>
+                    <pre class="incident-code"># Before (위험)
+BODY="${{ github.event.comment.body }}"
+
+# After (안전)
+env:
+  COMMENT_BODY: ${{ github.event.comment.body }}
+run: |
+  BODY="$COMMENT_BODY"</pre>
+                </div>
+            </div>
+            <div class="incident-log-item incident-log-item--success">
+                <div class="incident-log-body">
+                    <strong>개밥먹기로 발견한 문제 2건 수정 후 정상 동작 확인</strong>
+                    <p>업데이트 링크 새창 수정 + 쉘 특수문자 수정 후 @sparta 멘션이 정상 응답했습니다.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 성과 -->
+    <div class="incident-card">
+        <h2 class="incident-heading">개밥먹기 성과</h2>
+
+        <div class="incident-lesson">
+            <h3>1. 실사용 환경에서 2개의 버그를 즉시 발견</h3>
+            <p>curl 테스트로는 발견할 수 없었던 문제를 실제 GitHub 환경에서 즉시 발견했습니다. 마크다운 렌더링 차이와 쉘 특수문자 처리는 실제 사용 환경에서만 체감할 수 있는 이슈입니다.</p>
+        </div>
+
+        <div class="incident-lesson">
+            <h3>2. PR 기반 워크플로우 확립</h3>
+            <p>이제 리뷰 서버의 모든 변경사항은 PR을 통해서만 main에 반영됩니다. PR마다 자동 AI 리뷰가 달려 코드 품질이 지속적으로 검증됩니다.</p>
+        </div>
+
+        <div class="incident-lesson">
+            <h3>3. 수강생과 동일한 경험</h3>
+            <table class="incident-table incident-table--compare">
+                <thead><tr><th>항목</th><th>수강생</th><th>리뷰 서버</th></tr></thead>
+                <tbody>
+                    <tr><td>워크플로우</td><td>ai-review.yml</td><td>동일</td></tr>
+                    <tr><td>리뷰 서버</td><td>review.example.com</td><td>동일</td></tr>
+                    <tr><td>자동 리뷰</td><td>PR opened/synchronize</td><td>동일</td></tr>
+                    <tr><td>대화 Q&A</td><td>@sparta 멘션</td><td>동일</td></tr>
+                    <tr><td>업데이트 공지</td><td>리뷰 코멘트에 표시</td><td>동일</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 아키텍처 -->
+    <div class="incident-card">
+        <h2 class="incident-heading">개밥먹기 아키텍처</h2>
+        <pre class="incident-code incident-code--arch">리뷰 서버 PR
+  → GitHub Actions (ai-review.yml)
+    → Cloudflare Tunnel
+      → 리뷰 서버 (Docker)
+        → Claude API
+          → AI 리뷰 코멘트 등록
+
+수강생 PR
+  → GitHub Actions (ai-review.yml)
+    → Cloudflare Tunnel
+      → 리뷰 서버 (Docker)
+        → Claude API
+          → AI 리뷰 코멘트 등록</pre>
+        <p style="text-align:center; margin-top:16px; color: var(--text-muted);">완전히 동일한 경로를 거칩니다.</p>
+    </div>
+
+</section>
+
+<footer class="footer">
+    <p>Spring Boot 3.5 + Spring AI 1.0 + Java 21</p>
+</footer>
+
+</body>
+</html>

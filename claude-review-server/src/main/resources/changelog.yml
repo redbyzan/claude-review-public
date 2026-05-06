@@ -1,0 +1,196 @@
+entries:
+  - date: "2026-04-23"
+    slug: "thinking-question"
+    title: "리뷰가 질문을 던지다 — 생각해보기"
+    description: "AI 리뷰가 '생각해보기' 질문을 자동으로 생성합니다. 리뷰를 읽고 끝나는 것이 아니라, 한 가지 질문을 더 고민하게 되어 학습 효과가 높아집니다. 궁금한 점은 @sparta 멘션으로 바로 질문할 수 있습니다."
+    detail: |-
+      **왜 이런 업데이트를 했을까요?**
+
+      32건의 리뷰 데이터를 분석해보니, 수강생들은 AI 리뷰를 잘 읽고 있었지만 리뷰를 넘어선 상호작용이 전혀 없었습니다. 반박 기능, @sparta 질문, 하단 버튼 — 모든 부가 기능의 사용률이 0%였습니다.
+
+      원인을 분석해보니 "리뷰가 충분히 좋아서 질문이 안 생긴다"는 것과 "질문 방법을 모른다"는 두 가지였습니다. 수강생은 리뷰를 읽고 수정하고 다시 PR을 올리는 루프에 이미 만족하고 있었습니다.
+
+      **그래서 접근 방식을 바꿨습니다.**
+
+      수강생이 직접 질문을 만들어서 물어보기를 기대하는 대신, **AI가 먼저 질문을 던지기로** 했습니다. "이 동시성 제어 방식은 트래픽이 10배 늘어나면 어떤 문제가 발생할까요?" 같은 질문이 리뷰 끝에 자동으로 생성됩니다.
+
+      코드를 보면 답이 바로 보이는 질문이 아니라, 원리와 트레이드오프를 고민해야 하는 질문입니다. 수강생은 이 질문을 읽는 순간 자연스럽게 머릿속에서 답을 떠올리게 되고, 이것이 실제 학습으로 이어집니다.
+
+      **무엇이 바뀌었나요?**
+
+      - **"생각해보기" 섹션 추가**: 리뷰의 학습 포인트 뒤에 질문 1개가 자동 생성됩니다. 멘토 페르소나는 학습적인 질문, 시니컬 페르소나는 운영 환경에서의 실패 시나리오를 묻는 도전적인 질문을 던집니다.
+      - **@sparta 멘션 유도 단순화**: 기존 shields.io 뱃지 3개를 제거하고, 생각해보기 질문 아래에 "궁금하면 @sparta를 남겨보세요"라는 자연스러운 안내 문구로 교체했습니다.
+      - **API 비용 정확도 개선**: 카탈로그에 등록되지 않은 AI 모델에도 기본 단가가 적용되어, 비용 통계가 "비용 미확인"이 아닌 실제 추정치로 표시됩니다.
+    detail: "full"
+    category: "feature"
+    action: "상세보기 →"
+    action-url: "/release/thinking-question"
+  - date: "2026-04-20"
+    slug: "tunnel-infra-standardization"
+    title: "서버 이중화 안정화 및 인프라 표준화"
+    description: "Active/Standby 서버 간의 네트워크 환경을 Docker로 표준화하여 라우팅 충돌 및 502 에러를 해결했습니다."
+    detail: |-
+      **이중화의 맹점을 해결했습니다:**
+      홈서버(Active)와 개발PC(Standby)가 같은 터널을 공유할 때 발생하던 라우팅 충돌을 해결했습니다. 대기서버의 인프라를 홈서버와 동일한 Docker 기반으로 표준화하여 장애 조치(Failover)의 신뢰성을 높였습니다.
+
+      **수정 내용:**
+      - **인프라 표준화**: 대기서버의 cloudflared를 Docker 컨테이너로 전환하여 홈서버와 동일한 네트워크 환경 제공
+      - **라우팅 충돌 해결**: Docker 브리지 네트워크를 통한 내부 서비스명(review-server, grafana) 해석 지원
+      - **환경 변수 보완**: Grafana 관리자 비밀번호 등 필수 변수 누락으로 인한 컨테이너 실행 실패 수정
+      - **구성 자동화**: `docker-compose.standby.yml` 확장 및 설정 파일 구조화
+    category: "fix"
+    action: "장애 대응 기록 보기 →"
+    action-url: "/incident"
+  - date: "2026-04-20"
+    slug: "monitoring-phase1"
+    title: "서버 로그 모니터링 시스템"
+    description: "이상징후를 자동 탐지하여 Slack으로 알림을 보내고, 팀별·모델별 사용 패턴을 Prometheus 메트릭으로 수집합니다. Claude API가 연속 실패하면 헬스체크에 반영됩니다."
+    detail: "MonitorService가 1분 간격으로 인증 차단·리뷰 실패·Rate Limit 급증을 감지합니다. 임계치 초과 시 Slack 알림이 발송되며, 쿨다운으로 중복 알림을 방지합니다. 헬스체크는 API에 직접 요청하지 않고 마지막 성공 시간과 연속 실패 횟수만으로 판단하여 비용을 절약합니다."
+    category: "feature"
+    action: "시나리오 보기 →"
+    action-url: "/release/monitoring-phase1"
+  - date: "2026-04-20"
+    slug: "cli-proxy-hotfix"
+    title: "CLI 폴백 복구 — Docker→Host 통신 수정"
+    description: "Claude API 장애 시 Gemini CLI로 폴백하는 기능이 프로덕션에서 동작하지 않았던 문제를 수정했습니다. 원인은 Docker 네트워크 설정 누락이었습니다."
+    detail: |-
+      **비상구가 잠겨있었습니다:**
+      Claude API 장애 시 보조 AI(Gemini)가 대신 답변하도록 설계했지만, 컨테이너에서 호스트로 가는 통로가 설정되지 않아 실제로는 동작하지 않았습니다.
+
+      **수정 내용:**
+      - 컨테이너→호스트 통로 설정 추가
+      - 보조 서버가 모든 연결을 수용하도록 변경
+      - 2초 연결 타임아웃 + 과열 방지 장치로 불필요한 대기 시간 제거
+      - 배포 후 7단계 자동 검증 스크립트로 재발 방지
+    category: "fix"
+  - date: "2026-04-20"
+    slug: "leaderboard-race"
+    title: "리더보드 레이스 UI"
+    description: "리더보드가 경주 트랙 형태로 변경되었습니다. 각 팀이 트랙에서 경주하는 것처럼 진행 상황이 시각화되며, 라인을 클릭하면 세부 통계를 확인할 수 있습니다."
+    detail: "full"
+    category: "feature"
+    action: "리더보드 보기 →"
+    action-url: "/leaderboard"
+  - date: "2026-04-18"
+    slug: "cta-buttons"
+    title: "리뷰에 CTA 버튼 추가"
+    description: "AI 리뷰 코멘트에 업데이트 가이드, 질문하기 버튼을 추가했습니다. 권장 개선 섹션 직후와 리뷰 하단에 시각적으로 눈에 띄는 버튼이 표시됩니다."
+    detail: "full"
+    category: "feature"
+    action: "시나리오 보기 →"
+    action-url: "/release/cta-buttons"
+  - date: "2026-04-18"
+    slug: "tunnel-ha"
+    title: "터널 이중화 — 서버가 죽어도 리뷰는 계속"
+    description: "홈서버와 개발PC 두 곳에서 Cloudflare Tunnel을 동시에 운영합니다. 한쪽이 다운되어도 자동으로 다른 쪽이 트래픽을 인계합니다."
+    detail: "full"
+    category: "feature"
+    action: "자동 페일오버 확인 →"
+    action-url: "/release/tunnel-ha"
+  - date: "2026-04-18"
+    slug: "requirements-based-review"
+    title: "과제 요구사항 기반 리뷰"
+    description: "AI가 과제의 필수/도전 기능 요구사항을 기준으로 먼저 리뷰합니다. 과제에서 금지하는 기술을 사용하면 자동으로 지적합니다."
+    detail: "full"
+    category: "feature"
+    action: "변경 전후 비교 →"
+    action-url: "/release/requirements-based-review"
+  - date: "2026-04-17"
+    slug: "epic19-rollback"
+    title: "서버 직접 등록 시도 — 권한 제약으로 회귀"
+    description: "코멘트 등록을 서버에서 직접 처리하도록 개선했으나, GitHub 권한 정책으로 인해 기존 방식으로 회귀했습니다. 서비스에는 영향이 없습니다."
+    category: "fix"
+    action: "실패 기록 보기 →"
+    action-url: "/incident/epic19"
+  - date: "2026-04-17"
+    slug: "github-service-infra"
+    title: "GitHub API 서버 인프라 구축"
+    description: "서버에서 GitHub API를 직접 호출할 수 있는 기반 인프라를 구축했습니다. 코멘트 등록, 리액션, PR diff 조회 기능을 제공합니다."
+    detail: "GitHubService + RestClient + PAT 인증. Rate Limit / 403 에러 핸들링. repo 화이트리스트 검증. Epic #19의 첫 단계. 향후 읽기 전용 용도로 보존."
+    category: "feature"
+  - date: "2026-04-16"
+    slug: "rebuttal-bot"
+    title: "AI 리뷰 반박봇"
+    description: "AI 리뷰의 사실 오류나 과도한 지적을 자동 검출하여 반박 코멘트를 등록합니다. 리뷰가 100% 정확하지 않을 수 있음을 사용자에게 체감시킵니다."
+    detail: "별도 엔드포인트(/review/rebuttal)에서 Haiku 모델로 리뷰를 검증합니다. 반박이 없으면 코멘트를 등록하지 않습니다. 기본 비활성화, 환경변수로 활성화합니다."
+    category: "feature"
+    action: "상세보기 →"
+    action-url: "/release/rebuttal"
+  - date: "2026-04-16"
+    slug: "release-detail-fix"
+    title: "릴리즈 상세페이지 버그 수정"
+    description: "특정 릴리즈 상세페이지가 잘못된 콘텐츠를 표시하던 버그를 수정하고, 릴리즈 목록에 상세보기 버튼을 추가했습니다."
+    category: "fix"
+  - date: "2026-04-16"
+    slug: "home-server-migration"
+    title: "홈서버 배포환경 이관"
+    description: "개발 Mac에서 홈서버 MacBook으로 배포 환경을 이관했습니다. CD 파이프라인이 Self-hosted Runner에서 SSH(Tailscale) 방식으로 전환되어, 개발 장비 리소스를 분리했습니다."
+    detail: "CI는 GitHub-hosted Runner에서 실행되고, CD는 SSH로 홈서버에 접속하여 Docker 빌드 후 헬스체크까지 수행합니다. Cloudflare Tunnel도 홈서버로 이관되었습니다."
+    category: "feature"
+  - date: "2026-04-16"
+    slug: "ci-cd-pipeline"
+    title: "CI/CD 파이프라인 및 테스트 인프라 구축"
+    description: "PR 시 자동 빌드/테스트, main 머지 시 Self-hosted Runner를 통한 자동 배포+헬스체크+롤백이 포함된 CI/CD 파이프라인을 구축했습니다. 31개 테스트와 JaCoCo 커버리지 검증이 포함됩니다."
+    detail: "CI는 GitHub-hosted Runner에서 실행되고, CD는 Self-hosted Runner(로컬 Mac)에서 직접 Docker 빌드 후 헬스체크까지 수행합니다. 배포 실패 시 이전 커밋으로 자동 롤백됩니다."
+    category: "feature"
+  - date: "2026-04-16"
+    slug: "eyes-reaction"
+    title: "멘션 즉시 인식 표시"
+    description: "@sparta 멘션 시 👀 이모지 반응이 즉시 추가되어 AI가 질문을 인식했음을 시각적으로 확인할 수 있습니다."
+    category: "feature"
+  - date: "2026-04-16"
+    slug: "dogfooding"
+    title: "개밥먹기 — 리뷰 서버가 스스로를 리뷰"
+    description: "리뷰 서버 저장소에 AI 코드리뷰를 직접 적용하여 수강생과 동일한 환경에서 품질을 검증합니다."
+    detail: "full"
+    category: "improvement"
+    action: "개밥먹기 기록 보기 →"
+    action-url: "/release/dogfooding"
+  - date: "2026-04-16"
+    slug: "review-guide"
+    title: "대화형 Q&A 강화"
+    description: "@sparta 멘션으로 전체 리뷰 대신 코드 질문에 집중합니다. 전체 리뷰는 PR 업데이트 시 자동 제공됩니다."
+    category: "improvement"
+  - date: "2026-04-15"
+    slug: "conversation"
+    title: "PR 코멘트 대화형 응답"
+    description: "PR에 @sparta 멘션으로 AI에게 질문하면 상세한 답변을 받을 수 있습니다. 기존 리뷰에 대한 질문, 코드 제안 요청, 새 리뷰 요청까지 가능합니다."
+    detail: "full"
+    category: "feature"
+    action: "사용 방법 보기 →"
+    action-url: "/release/conversation"
+  - date: "2026-04-15"
+    slug: "leaderboard"
+    title: "리더보드 및 팀 활동 통계"
+    description: "팀별 리뷰 순위, AI 모델 사용 현황, 최근 PR 링크를 확인할 수 있는 리더보드가 추가되었습니다."
+    category: "feature"
+    action: "리더보드 보기 →"
+    action-url: "/leaderboard"
+  - date: "2026-04-15"
+    slug: "cloudflare-tunnel"
+    title: "Cloudflare Tunnel 도입으로 네트워크 안정화"
+    description: "인프라 의존성을 제거하여 외부 네트워크 장애에 영향받지 않도록 개선했습니다."
+    category: "improvement"
+    action: "장애 대응 기록 보기 →"
+    action-url: "/incident"
+  - date: "2026-04-15"
+    slug: "prereview"
+    title: "이전 피드백 검증 기능"
+    description: "PR 업데이트 시 이전 리뷰 피드백 반영 여부를 AI가 검증합니다."
+    category: "feature"
+  - date: "2026-04-14"
+    slug: "monitoring"
+    title: "모니터링 시스템 구축"
+    description: "Prometheus + Grafana 대시보드로 서비스 상태를 실시간 추적합니다."
+    category: "feature"
+    internal: true
+  - date: "2026-04-14"
+    slug: "diff-limit"
+    title: "diff 제한 10KB → 50KB 상향"
+    description: "더 큰 PR도 충분히 리뷰할 수 있게 diff 제한을 늘렸습니다."
+    category: "improvement"
+  - date: "2026-04-14"
+    slug: "gemini-fallback"
+    title: "Gemini 폴백 추가"
+    description: "Claude API 장애 시 Gemini로 자동 전환됩니다."
+    category: "improvement"

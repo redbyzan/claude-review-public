@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>서비스 통계 — AI Code Review</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css?v=20260422a}">
+</head>
+<body>
+
+<section class="release-header">
+    <a class="release-back" th:href="@{/}">&larr; 메인으로</a>
+    <h1 class="release-title">서비스 통계</h1>
+    <p class="release-subtitle">AI 코드리뷰 사용량 현황</p>
+</section>
+
+<section class="stats">
+
+    <!-- Range indicator -->
+    <div class="stats-range">
+        <span>기준: 서비스 오픈 ~ 현재</span>
+        <span class="stats-range-dot"></span>
+        <span th:text="'갱신: ' + ${#temporals.format(stats.lastUpdated, 'HH:mm')}">갱신: --:--</span>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="stats-kpi">
+        <div class="stats-kpi-card">
+            <span class="stats-kpi-value stats-kpi-value--cyan" th:text="${stats.totalReviews}">0</span>
+            <span class="stats-kpi-label">Total Reviews</span>
+            <span class="stats-kpi-sub" th:text="${stats.totalTeams} + '개 팀 참여'">0개 팀 참여</span>
+        </div>
+        <div class="stats-kpi-card">
+            <span class="stats-kpi-value"
+                  th:classappend="${stats.successRate >= 95} ? 'stats-kpi-value--green' : (${stats.successRate >= 90} ? 'stats-kpi-value--yellow' : 'stats-kpi-value--red')"
+                  th:text="${stats.formattedSuccessRate()}">0%</span>
+            <span class="stats-kpi-label">Success Rate</span>
+            <span class="stats-kpi-sub">세션 기준</span>
+        </div>
+        <div class="stats-kpi-card">
+            <span class="stats-kpi-value stats-kpi-value--purple" th:text="${stats.formattedUptime()}">0h</span>
+            <span class="stats-kpi-label">Uptime</span>
+            <span class="stats-kpi-sub">현재 세션</span>
+        </div>
+        <div class="stats-kpi-card">
+            <span class="stats-kpi-value stats-kpi-value--purple" th:text="${stats.formattedTokens()}">0</span>
+            <span class="stats-kpi-label">Token Usage</span>
+            <span class="stats-kpi-sub">건당 평균 <span th:text="${#numbers.formatInteger(stats.avgTokensPerReview, 1)}">0</span></span>
+        </div>
+    </div>
+
+    <!-- Detail Grid -->
+    <div class="stats-grid">
+
+        <!-- Persona Breakdown -->
+        <div class="stats-card">
+            <h3 class="stats-card-title">페르소나별 리뷰</h3>
+            <div class="stats-bar-group">
+                <div class="stats-bar-item">
+                    <span class="stats-bar-label">시니어 멘토</span>
+                    <div class="stats-bar">
+                        <div class="stats-bar-fill stats-bar-fill--cyan"
+                             th:style="'width:' + ${(stats.mentorCount * 100) / (stats.totalReviews > 0 ? stats.totalReviews : 1)} + '%'"></div>
+                    </div>
+                    <span class="stats-bar-value" th:text="${stats.mentorCount} + '건'">0건</span>
+                </div>
+                <div class="stats-bar-item">
+                    <span class="stats-bar-label">시니컬 원칙주의자</span>
+                    <div class="stats-bar">
+                        <div class="stats-bar-fill stats-bar-fill--red"
+                             th:style="'width:' + ${(stats.cynicCount * 100) / (stats.totalReviews > 0 ? stats.totalReviews : 1)} + '%'"></div>
+                    </div>
+                    <span class="stats-bar-value" th:text="${stats.cynicCount} + '건'">0건</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Model Breakdown -->
+        <div class="stats-card">
+            <h3 class="stats-card-title">모델별 리뷰</h3>
+            <div class="stats-bar-group">
+                <div class="stats-bar-item" th:each="entry : ${stats.modelCounts}">
+                    <span class="stats-bar-label" th:text="${entry.key}">model</span>
+                    <div class="stats-bar">
+                        <div class="stats-bar-fill stats-bar-fill--purple"
+                             th:style="'width:' + ${(entry.value * 100) / (stats.totalReviews > 0 ? stats.totalReviews : 1)} + '%'"></div>
+                    </div>
+                    <span class="stats-bar-value" th:text="${entry.value} + '건'">0건</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fallback Status -->
+        <div class="stats-card">
+            <h3 class="stats-card-title">폴백 이중화</h3>
+            <div class="stats-metrics">
+                <div class="stats-metric">
+                    <span class="stats-metric-value stats-metric-value--green" th:text="${stats.fallbackSuccess}">0</span>
+                    <span class="stats-metric-label">Gemini 성공</span>
+                </div>
+                <div class="stats-metric">
+                    <span class="stats-metric-value stats-metric-value--red" th:text="${stats.fallbackFail}">0</span>
+                    <span class="stats-metric-label">Gemini 실패</span>
+                </div>
+                <div class="stats-metric">
+                    <span class="stats-metric-value" th:text="${stats.formattedFallbackRate()}">0%</span>
+                    <span class="stats-metric-label">복구율</span>
+                </div>
+            </div>
+            <p class="stats-card-note">Claude 장애 시 Gemini로 자동 전환</p>
+        </div>
+
+        <!-- Security / Limits -->
+        <div class="stats-card">
+            <h3 class="stats-card-title">보안 / 제한</h3>
+            <div class="stats-metrics">
+                <div class="stats-metric">
+                    <span class="stats-metric-value" th:classappend="${stats.rateLimitBlocked > 0} ? 'stats-metric-value--yellow' : 'stats-metric-value--green'"
+                          th:text="${stats.rateLimitBlocked}">0</span>
+                    <span class="stats-metric-label">Rate Limit 차단</span>
+                </div>
+                <div class="stats-metric">
+                    <span class="stats-metric-value" th:classappend="${stats.githubApiErrors > 0} ? 'stats-metric-value--yellow' : 'stats-metric-value--green'"
+                          th:text="${stats.githubApiErrors}">0</span>
+                    <span class="stats-metric-label">GitHub API 에러</span>
+                </div>
+            </div>
+            <p class="stats-card-note">세션 기준 (재시작 시 초기화)</p>
+        </div>
+
+        <!-- Feature Usage -->
+        <div class="stats-card">
+            <h3 class="stats-card-title">기능별 사용량</h3>
+            <div class="stats-list">
+                <div class="stats-list-item">
+                    <span class="stats-list-label">CTA 삽입</span>
+                    <span class="stats-list-value" th:text="${stats.ctaInsertions} + '건'">0건</span>
+                </div>
+                <div class="stats-list-item">
+                    <span class="stats-list-label">반박 (Rebuttal)</span>
+                    <span class="stats-list-value" th:text="${stats.rebuttalRequests} + '건'">0건</span>
+                </div>
+                <div class="stats-list-item">
+                    <span class="stats-list-label">대화 요청</span>
+                    <span class="stats-list-value" th:text="${stats.conversationRequests} + '건'">0건</span>
+                </div>
+            </div>
+            <p class="stats-card-note">누적 (오픈 ~ 현재)</p>
+        </div>
+
+        <!-- Token Details -->
+        <div class="stats-card">
+            <h3 class="stats-card-title">토큰 &amp; 비용</h3>
+            <div class="stats-list">
+                <div class="stats-list-item">
+                    <span class="stats-list-label">총 토큰</span>
+                    <span class="stats-list-value" th:text="${#numbers.formatInteger(stats.totalTokens, 1)}">0</span>
+                </div>
+                <div class="stats-list-item">
+                    <span class="stats-list-label">건당 평균</span>
+                    <span class="stats-list-value" th:text="${#numbers.formatInteger(stats.avgTokensPerReview, 1)}">0</span>
+                </div>
+                <div class="stats-list-item">
+                    <span class="stats-list-label">API 비용</span>
+                    <span class="stats-list-value stats-cost" th:text="${stats.formattedCost()}">$0.00</span>
+                </div>
+            </div>
+            <p class="stats-card-note">누적 (오픈 ~ 현재) | 카탈로그 미등록 모델은 기본 단가 적용</p>
+        </div>
+
+    </div>
+
+</section>
+
+<footer class="footer">
+    <p>Spring Boot 3.5 + Spring AI 1.0 + Java 21</p>
+</footer>
+
+</body>
+</html>

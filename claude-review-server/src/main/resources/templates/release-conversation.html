@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PR 코멘트 대화형 응답 — AI Code Review</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css?v=20260416a}">
+</head>
+<body>
+
+<section class="release-header">
+    <a class="release-back" th:href="@{/release}">&larr; 릴리즈 노트</a>
+    <h1 class="release-title">PR 코멘트 대화형 응답</h1>
+    <p class="release-subtitle">
+        <span th:text="${entry.date}"></span>
+        <span class="changelog-tag" style="margin-left:8px; vertical-align:middle;"
+              th:classappend="' changelog-tag--' + ${entry.category}"
+              th:text="${entry.category == 'feature'} ? '기능' : (${entry.category == 'improvement'} ? '개선' : '수정')"></span>
+    </p>
+</section>
+
+<section class="incident">
+
+    <!-- Overview -->
+    <div class="incident-card">
+        <h2 class="incident-heading">기능 개요</h2>
+        <p>PR에 @sparta 멘션으로 AI에게 질문하면 상세한 답변을 받을 수 있습니다. 기존 리뷰에 대한 질문, 코드 제안 요청, 새 리뷰 요청까지 가능합니다.</p>
+    </div>
+
+    <!-- Scenario 1 -->
+    <div class="incident-card">
+        <div class="incident-phase-header">
+            <span class="incident-phase-num">1</span>
+            <div>
+                <h2 class="incident-heading">시나리오 1: 리뷰에 궁금한 점이 있을 때</h2>
+                <span class="incident-phase-time">가장 많이 사용하게 될 기본 시나리오</span>
+            </div>
+        </div>
+
+        <div class="incident-log">
+            <div class="incident-log-item">
+                <div class="incident-log-body">
+                    <strong>PR에 AI 리뷰가 달렸습니다</strong>
+                    <p>PR을 열면 AI가 자동으로 코드를 리뷰하고 코멘트를 남깁니다.</p>
+                    <pre class="incident-code">## 🤖 AI 코드리뷰
+
+### 🔴 주의
+- `UserService.java` 42번째 줄에서 NPE 위험이 있습니다.
+  `user.getName()` 호출 전 null 체크가 필요합니다.</pre>
+                </div>
+            </div>
+            <div class="incident-log-item">
+                <div class="incident-log-body">
+                    <strong>리뷰 내용에 질문을 남깁니다</strong>
+                    <p>PR 코멘트에 <code>@sparta</code>를 멘션하고 질문을 적습니다.</p>
+                    <pre class="incident-code">@sparta NPE 위험이라고 했는데, Optional을 쓰는 게 나을까요?
+아니면 그냥 null 체크 if문이 나을까요?</pre>
+                </div>
+            </div>
+            <div class="incident-log-item incident-log-item--success">
+                <div class="incident-log-body">
+                    <strong>AI가 질문에 답변합니다</strong>
+                    <p>잠시 후 AI가 페르소나(멘토/시니컬) 톤에 맞춰 답변을 달아줍니다.</p>
+                    <pre class="incident-code">## 💬 AI 답변
+
+이 코드에서는 `Optional`보다 null 체크가 더 적합합니다.
+
+```java
+// 추천 방식
+if (user != null) {
+    return user.getName();
+}
+return "알 수 없음";
+```
+
+`Optional`은 반환값이 없을 수 있음을 명시할 때 쓰는 게 좋고,
+지역 변수의 null 방어에는 전통적인 체크가 더 깔끔합니다.</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scenario 2 -->
+    <div class="incident-card">
+        <div class="incident-phase-header">
+            <span class="incident-phase-num">2</span>
+            <div>
+                <h2 class="incident-heading">시나리오 2: 특정 코드 라인에 질문하고 싶을 때</h2>
+                <span class="incident-phase-time">라인 단위 정밀 질문</span>
+            </div>
+        </div>
+
+        <div class="incident-log">
+            <div class="incident-log-item">
+                <div class="incident-log-body">
+                    <strong>AI 리뷰의 특정 라인 코멘트에 답글을 답니다</strong>
+                    <p>리뷰 코멘트(특정 줄에 달린 코멘트)에 답글을 달아 질문합니다.</p>
+                    <pre class="incident-code">@sparta 이 줄에서 제안한 리팩토링 예시 코드를 보여줄 수 있어?</pre>
+                </div>
+            </div>
+            <div class="incident-log-item incident-log-item--success">
+                <div class="incident-log-body">
+                    <strong>해당 코드 컨텍스트를 기반으로 답변합니다</strong>
+                    <p>AI가 해당 파일의 diff와 리뷰 내용을 참고하여 구체적인 예시 코드를 제시합니다.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scenario 3 -->
+    <div class="incident-card">
+        <div class="incident-phase-header">
+            <span class="incident-phase-num">3</span>
+            <div>
+                <h2 class="incident-heading">시나리오 3: 아직 리뷰가 없는 PR에서 멘션할 때</h2>
+                <span class="incident-phase-time">PR 업데이트 안내</span>
+            </div>
+        </div>
+
+        <div class="incident-log">
+            <div class="incident-log-item">
+                <div class="incident-log-body">
+                    <strong>PR에 아직 AI 리뷰가 없는 상태에서 멘션합니다</strong>
+                    <pre class="incident-code">@sparta 이 PR 코드 리뷰해줘</pre>
+                </div>
+            </div>
+            <div class="incident-log-item">
+                <div class="incident-log-body">
+                    <strong>AI가 안내 메시지를 남깁니다</strong>
+                    <p>전체 리뷰는 PR opened/synchronize 이벤트에서만 자동 생성됩니다. 멘션으로는 대화형 Q&A를 제공합니다.</p>
+                    <pre class="incident-code">전체 리뷰는 PR을 업데이트(push)하면 자동으로 제공됩니다.
+궁금한 부분에 대해 멘션으로 질문을 남겨 보세요.</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- How it works -->
+    <div class="incident-card">
+        <h2 class="incident-heading">작동 방식</h2>
+        <table class="incident-table">
+            <tr><th>트리거</th><td>PR 코멘트에 <code>@sparta</code> 멘션 (대소문자 구분)</td></tr>
+            <tr><th>즉시 인식</th><td>멘션 감지 시 👀 이모지가 즉시 추가됩니다</td></tr>
+            <tr><th>응답 시간</th><td>보통 10~30초 내로 코멘트가 등록됩니다</td></tr>
+            <tr><th>페르소나</th><td>멘토 모드 / 시니컬 모드가 번갈아 적용됩니다</td></tr>
+            <tr><th>대화 히스토리</th><td>최근 10개까지 이전 Q&A를 참고하여 일관된 답변을 제공합니다</td></tr>
+            <tr><th>지원 코멘트</th><td>일반 코멘트(issue_comment) + 라인 리뷰 답글(review_comment)</td></tr>
+        </table>
+    </div>
+
+    <!-- Tips -->
+    <div class="incident-card">
+        <h2 class="incident-heading">사용 팁</h2>
+        <div class="incident-lesson">
+            <h3>질문은 구체적으로</h3>
+            <p><code>@sparta 이 코드 어떤가요?</code> 보다 <code>@sparta 42번 줄의 NPE 위험을 어떻게 고치는 게 좋을까요?</code> 처럼 구체적으로 물어보면 더 정확한 답변을 받을 수 있습니다.</p>
+        </div>
+        <div class="incident-lesson">
+            <h3>연속 질문 가능</h3>
+            <p>한 PR에서 여러 번 질문할 수 있습니다. AI가 이전 대화 내용을 기억하여 맥락에 맞는 답변을 제공합니다.</p>
+        </div>
+        <div class="incident-lesson">
+            <h3>멘션만 있으면 스킵</h3>
+            <p><code>@sparta</code>만 단독으로 적히면(질문 내용이 없으면) 응답하지 않습니다. 반드시 질문 내용을 함께 적어주세요.</p>
+        </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="incident-card" style="text-align:center; padding:40px 32px;">
+        <h2 class="incident-heading" style="margin-bottom:8px;">적용 방법</h2>
+        <p style="margin-bottom:24px;">최신 <code>ai-review.yml</code>을 다운로드하여 팀 레포의 <code>.github/workflows/</code> 에 덮어쓰세요.<br>이미 <code>REVIEW_SERVER_URL</code>과 <code>REVIEW_SECRET</code>이 등록되어 있다면 추가 설정 없이 바로 사용할 수 있습니다.</p>
+        <a th:replace="~{fragments/download :: btn('ai-review.yml 다운로드')}"></a>
+    </div>
+
+</section>
+
+<footer class="footer">
+    <p>Spring Boot 3.5 + Spring AI 1.0 + Java 21</p>
+</footer>
+
+</body>
+</html>
