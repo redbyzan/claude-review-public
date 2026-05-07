@@ -1,0 +1,39 @@
+name: Eval Nightly Full Run
+
+on:
+  schedule:
+    - cron: "3 3 * * *" # daily at 03:03 UTC
+  workflow_dispatch:
+
+jobs:
+  nightly-full:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: "evals/.node-version"
+
+      - name: Install dependencies
+        run: cd evals && npm ci
+
+      - name: Run eval with judge
+        env:
+          REVIEW_SECRET: ${{ secrets.REVIEW_SECRET }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          BASELINE="evals/baselines/nightly-$(date +%Y%m%d).json"
+          node evals/eval-runner.mjs \
+            --limit 3 \
+            --with-judge \
+            --meta-eval \
+            --save-baseline "$BASELINE" \
+            --output evals/baselines/latest-result.json
+
+      - name: Upload baseline artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-baseline-${{ github.run_number }}
+          path: evals/baselines/
+          retention-days: 30

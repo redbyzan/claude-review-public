@@ -82,9 +82,11 @@ claude-review/
 │   └── deploy.sh                  # 배포 스크립트
 ├── server/                        # Node.js v1 (레거시)
 ├── cli-proxy/                     # Gemini 폴백 프록시
-├── evals/                         # 평가 파이프라인
-│   ├── eval-runner.py             # 평가 실행기
-│   ├── judge_client.py            # LLM-as-Judge
+├── evals/                         # 평가 파이프라인 (Node.js 18+)
+│   ├── eval-runner.mjs            # 평가 실행기 (공식)
+│   ├── judge-client.mjs           # LLM-as-Judge
+│   ├── eval-runner.py             # 평가 실행기 (Python 백업)
+│   ├── judge_client.py            # LLM-as-Judge (Python 백업)
 │   ├── eval-config.yaml           # 평가 설정
 │   └── golden-dataset/            # 골든 데이터셋
 └── docs/                          # 문서
@@ -222,12 +224,15 @@ jobs:
 ## 평가 파이프라인 (evals/)
 
 ```bash
+# Dry-run (API 호출 없음, 시크릿 불필요)
+node evals/eval-runner.mjs --dry-run
+
 # 골든 데이터셋 기반 평가 실행
-cd evals
-python3 eval-runner.py --server-url http://localhost:8080 --secret your-secret
+REVIEW_SECRET=your-secret node evals/eval-runner.mjs
 
 # LLM-as-Judge 평가 (Anthropic API 키 필요)
-python3 eval-runner.py --server-url http://localhost:8080 --secret your-secret --with-judge
+REVIEW_SECRET=your-secret ANTHROPIC_API_KEY=your-key \
+  node evals/eval-runner.mjs --with-judge --meta-eval
 ```
 
 ---

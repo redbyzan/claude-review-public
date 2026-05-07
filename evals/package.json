@@ -1,0 +1,20 @@
+{
+  "name": "claude-review-evals",
+  "version": "1.0.0",
+  "description": "AI Code Review Bot evaluation runner",
+  "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "eval": "node eval-runner.mjs",
+    "eval:dry-run": "node eval-runner.mjs --dry-run",
+    "eval:judge": "node eval-runner.mjs --with-judge --meta-eval",
+    "eval:baseline": "node eval-runner.mjs --save-baseline evals/baselines/good-run.json",
+    "eval:regression": "node eval-runner.mjs --baseline evals/baselines/good-run.json"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "js-yaml": "^4.1.0"
+  }
+}
