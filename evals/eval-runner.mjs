@@ -855,17 +855,25 @@ program
   )
   .option("--config <path>", "Path to eval-config.yaml", DEFAULT_CONFIG_PATH)
   .option("--dataset-dir <path>", "Path to golden-dataset directory", DEFAULT_DATASET_DIR)
-  .option("--limit <n>", "Limit number of test cases", parseInt)
+  .option("--limit <n>", "Limit number of test cases", (v) => {
+    const n = Number(v);
+    if (!Number.isInteger(n)) { console.error(`ERROR: --limit must be an integer, got "${v}"`); process.exit(1); }
+    return n;
+  })
   .option("--category <cat>", "Run only cases from a specific category")
   .option("--output <path>", "Write JSON results to this file path")
   .option("--dry-run", "Load cases and print summary without calling API", false)
   .option("--save-baseline <path>", "Save results as baseline JSON to this path")
   .option("--baseline <path>", "Load baseline JSON and compare with current run")
-  .option("--repeat <n>", "Run evaluation N times and report variance", parseInt)
+  .option("--repeat <n>", "Run evaluation N times and report variance", (v) => {
+    const n = Number(v);
+    if (!Number.isInteger(n)) { console.error(`ERROR: --repeat must be an integer, got "${v}"`); process.exit(1); }
+    return n;
+  })
   .option("--with-judge", "Enable LLM-as-Judge evaluation via Anthropic API", false)
   .option("--meta-eval", "Compute judge-keyword agreement rate (requires --with-judge)", false)
   .action(async (opts) => {
-    if (opts.repeat != null && opts.repeat < 1) {
+    if (opts.repeat != null && (Number.isNaN(opts.repeat) || opts.repeat < 1)) {
       console.error("ERROR: --repeat must be >= 1");
       process.exit(1);
     }
@@ -884,4 +892,7 @@ program
     });
   });
 
-program.parse();
+// Guard: only parse CLI when run directly (not when imported for testing)
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  program.parse();
+}

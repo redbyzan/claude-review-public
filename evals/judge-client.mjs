@@ -48,7 +48,7 @@ export function extractScore(responseText) {
  * @returns {number}
  */
 export function blendScores(keywordRate, judgeScore, judgeWeight = 0.2) {
-  if (judgeWeight < 0 || judgeWeight > 1) {
+  if (typeof judgeWeight !== "number" || Number.isNaN(judgeWeight) || judgeWeight < 0 || judgeWeight > 1) {
     throw new Error(
       `judgeWeight must be between 0.0 and 1.0 inclusive, got ${judgeWeight}`,
     );
