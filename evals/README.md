@@ -9,15 +9,31 @@ The eval pipeline reads golden-dataset YAML files, sends each case to the
 review API (or simulates in dry-run), evaluates keyword hits, detects
 severity levels, and optionally runs LLM-as-Judge scoring with meta-evaluation.
 
+**Primary runtime: Node.js 18+** (`node evals/eval-runner.mjs`).
+Python scripts (`eval-runner.py`, `judge_client.py`) are preserved for
+cross-validation and backup.
+
 ## Quick Start (Local)
 
 Run a dry-run to verify all golden dataset files parse correctly:
 
 ```bash
-python3 evals/eval-runner.py --dry-run
+node evals/eval-runner.mjs --dry-run
+```
+
+Or using npm:
+
+```bash
+cd evals && npm run eval:dry-run
 ```
 
 This loads all 22 test cases without making any API calls. No secrets required.
+
+### Python (backup)
+
+```bash
+python3 evals/eval-runner.py --dry-run
+```
 
 ## Golden Dataset Structure
 
@@ -87,7 +103,7 @@ Configuration file at `evals/eval-config.yaml`:
 ## CLI Reference
 
 ```
-python3 evals/eval-runner.py [OPTIONS]
+node evals/eval-runner.mjs [OPTIONS]
 ```
 
 | Flag | Description |
@@ -119,17 +135,17 @@ python3 evals/eval-runner.py [OPTIONS]
 
 - **Trigger:** pull_request to `main` (paths: `evals/**`)
 - **Job:** `pr-fast-check`
-- **What it does:** Runs `python3 evals/eval-runner.py --dry-run`
+- **What it does:** Runs `node evals/eval-runner.mjs --dry-run`
 - **Secrets:** None. Dry-run mode makes no API calls and requires no secrets.
   Safe for fork PRs.
 - **Purpose:** Validates that golden dataset YAML files parse correctly and
-  eval-runner.py can load all cases.
+  eval-runner can load all cases.
 
 ### Nightly Full Run (`eval-nightly.yml`)
 
 - **Trigger:** schedule (daily at 03:00 UTC) and workflow_dispatch
 - **Job:** `nightly-full`
-- **What it does:** Runs `python3 evals/eval-runner.py --limit 3 --with-judge --meta-eval --save-baseline`
+- **What it does:** Runs `node evals/eval-runner.mjs --limit 3 --with-judge --meta-eval --save-baseline`
 - **Secrets:** `REVIEW_SECRET` and `ANTHROPIC_API_KEY` (from GitHub Actions secrets)
 - **No pull_request trigger:** Prevents secret exposure from fork PRs
 - **Purpose:** Runs 3 live review API calls with judge scoring and meta-evaluation.
@@ -147,12 +163,12 @@ from the baseline.
 
 1. Save a baseline after a good run:
    ```bash
-   python3 evals/eval-runner.py --save-baseline evals/baselines/good-run.json
+   node evals/eval-runner.mjs --save-baseline evals/baselines/good-run.json
    ```
 
 2. Compare future runs against it:
    ```bash
-   python3 evals/eval-runner.py --baseline evals/baselines/good-run.json
+   node evals/eval-runner.mjs --baseline evals/baselines/good-run.json
    ```
 
 3. If exit code is 3, a regression was detected and the change should be rolled
@@ -170,5 +186,18 @@ comparison.
 3. Use the schema above to fill in all required fields
 4. Set `expected.must_contain` to keywords the review must mention
 5. Set `expected.severity` to the appropriate level
-6. Run `python3 evals/eval-runner.py --dry-run` to verify the file parses correctly
+6. Run `node evals/eval-runner.mjs --dry-run` to verify the file parses correctly
 7. The PR fast-check will validate the new file on pull request
+
+## Cross-Validation with Python
+
+Python scripts are preserved in the same directory for backup and cross-validation:
+
+```bash
+# Compare outputs
+python3 evals/eval-runner.py --dry-run --output /tmp/py.json
+node evals/eval-runner.mjs --dry-run --output /tmp/js.json
+diff /tmp/py.json /tmp/js.json
+```
+
+Both runtimes produce identical JSON output for the same golden dataset.

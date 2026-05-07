@@ -1,0 +1,23 @@
+name: Eval PR Fast-Check
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "evals/**"
+
+jobs:
+  pr-fast-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: cd evals && npm ci
+
+      - name: Dry-run eval
+        run: node evals/eval-runner.mjs --dry-run
