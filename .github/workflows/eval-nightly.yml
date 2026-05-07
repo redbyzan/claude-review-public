@@ -13,7 +13,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version-file: "evals/.node-version"
 
       - name: Install dependencies
         run: cd evals && npm ci
